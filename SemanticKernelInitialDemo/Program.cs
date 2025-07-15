@@ -9,15 +9,19 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.KernelMemory;
 using SemanticKernelInitialDemo.Plugins;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Agents;
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0001
 
-// Populate values from your OpenAI deployment
-var modelId = "qwen/qwen3-1.7b";
-var apiUrl = @"http://127.0.0.1:1234/v1/";
-
 ConsoleHelper.SetCurrentFont("Consolas", 22);
 
+
+MixedChat_Agents mixedChat = new MixedChat_Agents();
+await mixedChat.ChatWithOpenAIAssistantAgentAndChatCompletionAgent(true);
+
+// Populate values from your OpenAI deployment
+var modelId = "google/gemma-3-4b";
+var apiUrl = @"http://127.0.0.1:1234/v1/";
 
 var builder = Kernel.CreateBuilder().AddOpenAIChatCompletion(
 modelId: modelId,
@@ -66,3 +70,7 @@ do
     // Add the message from the agent to the chat history
     history.AddMessage(result.Role, result.Content ?? string.Empty);
 } while (userInput is not null);
+
+
+
+//ChatWithOpenAIAssistantAgentAndChatCompletionAgent
