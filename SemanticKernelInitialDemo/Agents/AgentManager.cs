@@ -51,7 +51,7 @@ public class MixedChat_Agents()
 
     public AssistantClient Client { get; }
 
-    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(bool useChatClient)
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(Kernel kernel)
     {
         var model = "gpt-4.1-nano";
 
@@ -61,7 +61,7 @@ public class MixedChat_Agents()
             {
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
-                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
+                Kernel = kernel,
             };
 
         AssistantClient assistantClient = new AssistantClient(PoorMansSecurity.Key);
@@ -114,7 +114,7 @@ public class MixedChat_Agents()
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
 
-        chatClient?.Dispose();
+        //chatClient?.Dispose();
     }
 
 
@@ -142,15 +142,15 @@ public class MixedChat_Agents()
     {
         var builder = Kernel.CreateBuilder();
 
-        if (useChatClient)
-        {
+        //if (useChatClient)
+        //{
             chatClient = AddChatClientToKernel(builder);
-        }
-        else
-        {
-            chatClient = null;
-            AddChatCompletionToKernel(builder, modelName);
-        }
+        //}
+        //else
+        //{
+        //    chatClient = null;
+        //    AddChatCompletionToKernel(builder, modelName);
+        //}
 
         return builder.Build();
     }
@@ -165,9 +165,18 @@ public class MixedChat_Agents()
         IChatClient chatClient;
         //if (this.UseOpenAIConfig)
         //{
-        chatClient = new OpenAI.OpenAIClient(PoorMansSecurity.Key)
-            .GetChatClient(PoorMansSecurity.Model)
+        chatClient = new OpenAI.OpenAIClient(new ApiKeyCredential("google/gemma-3-4b"),
+            new OpenAIClientOptions
+            {
+                Endpoint = new Uri(@"http://127.0.0.1:1234/v1/"),
+            })
+            .GetChatClient("google/gemma-3-4b")
             .AsIChatClient();
+
+
+        
+
+
         //}
         //else if (!string.IsNullOrEmpty(this.ApiKey))
         //{

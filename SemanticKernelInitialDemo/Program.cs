@@ -16,8 +16,7 @@ using Agents;
 ConsoleHelper.SetCurrentFont("Consolas", 22);
 
 
-MixedChat_Agents mixedChat = new MixedChat_Agents();
-await mixedChat.ChatWithOpenAIAssistantAgentAndChatCompletionAgent(true);
+
 
 // Populate values from your OpenAI deployment
 var modelId = "google/gemma-3-4b";
@@ -26,7 +25,11 @@ var apiUrl = @"http://127.0.0.1:1234/v1/";
 var builder = Kernel.CreateBuilder().AddOpenAIChatCompletion(
 modelId: modelId,
 apiKey: modelId,
-endpoint: new Uri(apiUrl));
+endpoint: new Uri(apiUrl)).AddOpenAIChatClient(modelId: modelId);
+
+
+
+
 
 builder.Plugins.AddFromType<LightsPlugin>();
 builder.Plugins.AddFromType<ExportPlugin>();
@@ -35,6 +38,13 @@ builder.Plugins.AddFromType<TimePlugin>();
 
 // Build the kernel
 Kernel kernel = builder.Build();
+
+
+
+MixedChat_Agents mixedChat = new MixedChat_Agents();
+await mixedChat.ChatWithOpenAIAssistantAgentAndChatCompletionAgent(kernel);
+
+
 
 var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
