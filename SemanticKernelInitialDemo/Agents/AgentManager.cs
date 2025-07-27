@@ -148,11 +148,11 @@ Create an executive summary from her essay:
     }
 
 #pragma warning disable SKEXP0110
-    private sealed class ApprovalTerminationStrategy(string valueToCauseAnExit = "approve") : TerminationStrategy
+    private sealed class ApprovalTerminationStrategy(string valueToCauseAnExit = "ApprovedAndDone") : TerminationStrategy
     {
         // Terminate when the final message contains the term "approve"
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-            => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
+            => Task.FromResult(history[history.Count - 1].Content?.Contains("ApprovedAndDone", StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
 

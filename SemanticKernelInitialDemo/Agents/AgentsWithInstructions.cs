@@ -24,6 +24,8 @@ namespace SemanticKernelInitialDemo.Agents
         The goal is to determine is the given copy is acceptable to print.
         If so, state that it is approved.
         If not, provide insight on how to refine suggested copy without example.
+        Do not accept a final copy unless there are no issues remaining.
+        Once there are no more issues and the result is accepted you always say 'ApprovedAndDone'
         """;
 
         private const string CopyWriterName = "CopyWriter";
