@@ -18,11 +18,13 @@
             --sk-docs-chat-even: #23253A;
             --sk-docs-chat-odd: #1f223d;
             --sk-docs-agent-final: #fad315;
+            --sk-agent-stripe-even: #23566333;
+            --sk-agent-stripe-odd: #22232d;
         }
 
         html, body {
             height: 100%;
-            font-family: 'Segoe UI', 'SegoeUI', 'Arial', 'sans-serif';
+            font-family: 'Segoe UI','SegoeUI','Arial','sans-serif';
             background: var(--sk-docs-dark);
             color: var(--sk-docs-light);
         }
@@ -88,8 +90,7 @@
                 vertical-align: middle;
             }
 
-            .translate-toggle-btn:hover,
-            .translate-toggle-btn:focus {
+            .translate-toggle-btn:hover, .translate-toggle-btn:focus {
                 background: #292b56;
                 color: #fff;
                 border-color: var(--sk-docs-accent);
@@ -124,8 +125,6 @@
             display: flex;
             flex-direction: column;
             width: 95vw;
-            /*max-width: 640px;
-            min-width: 300px; */
             min-height: 780px;
             margin: 32px 0;
             background: var(--sk-docs-surface);
@@ -219,7 +218,7 @@
                 height: 20px;
                 color: var(--sk-docs-accent);
             }
-        /* CHAT MESSAGE LAYOUT */
+
         .chat-message {
             display: flex;
             margin-bottom: 1.03rem;
@@ -258,33 +257,33 @@
             border: 1.5px solid var(--sk-docs-border);
             transition: background .14s, color .15s;
         }
-        /* USER bubbles always left, with SK-green accent */
+
         .chat-message[data-role="Client"] .chat-bubble {
             background: var(--sk-docs-user);
             color: #233137;
             border-color: #1dcfa0;
             font-weight: 600;
         }
-        /* Assistant bubbles always on the right, with SK blue/purple accent */
+
         .chat-message[data-role="Assistant"] .chat-bubble {
             background: var(--sk-docs-primary);
             color: #fff;
             border-color: #a292ec;
         }
-        /* System bubbles always on the right but faded */
+
         .chat-message[data-role="System"] .chat-bubble {
             background: #25253d;
             border-color: #35384a;
             color: #acc6de;
             font-style: italic;
         }
-        /* An agent (other than user) with AuthorName field appears on the right, with blue accent */
+
         .chat-message.agent-chat-left .chat-bubble {
             background: var(--sk-docs-agent);
             color: #131e2a;
             border-color: #5edfff99;
         }
-        /* Agent avatar styling */
+
         .agent-gator-avatar {
             width: 44px;
             height: 44px;
@@ -370,18 +369,114 @@
             padding: 2%;
         }
 
+        /* -- AGENT CARDS MODIFIED + ZEBRA STRIPES -- */
+        .agents-list-container {
+            overflow-y: auto;
+            max-height: 320px;
+            min-height: 120px;
+            padding-bottom: 40px; /* for the Add+Start buttons float */
+        }
+
         .agent-card {
-            margin-bottom: 20px;
-            background-color: teal;
-            border-radius: 8px;
-            padding: 10px;
+            background: transparent;
+            border-radius: 9px;
+            padding: 0.7em 1.1em 0.9em 1.1em;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 7px #5edfff11;
+            border: 1.5px solid var(--sk-docs-border);
+            transition: box-shadow 0.14s;
+            position: relative;
+        }
+
+            .agent-card.agent-stripe-even {
+                background: var(--sk-agent-stripe-even);
+            }
+
+            .agent-card.agent-stripe-odd {
+                background: var(--sk-agent-stripe-odd);
+            }
+
+        .agent-card-header-line {
+            display: flex;
+            align-items: center;
+            gap: 0.80em;
+            margin-bottom: 0.45em;
+            width: 100%;
         }
 
         .agent-name-input {
-            width: 30%;
+            flex: 1 0 68px;
+            min-width: 0;
+            margin-right: 0.36em;
+            font-weight: 600;
+            background: #181a22;
+            color: #dff6ff;
+            border-radius: 7px;
+            border: 1px solid #354669;
+            padding: 2px 0.6em;
         }
 
+            .agent-name-input:focus {
+                outline: none;
+                border-color: var(--sk-docs-accent);
+                background: #212435;
+            }
 
+        .final-reviewer-checkbox {
+            margin-left: 0.7em;
+            margin-right: 0.22em;
+            accent-color: var(--sk-docs-agent-final);
+            transform: scale(1.11);
+        }
+
+        .agent-final-label {
+            margin: 0 1.2em 0 0;
+            font-size: 0.98em;
+            color: #fde266;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .agent-remove-btn {
+            background: transparent;
+            border: none;
+            color: #e85169;
+            font-size: 1.8em;
+            font-weight: 800;
+            line-height: 0.6;
+            margin-left: auto;
+            cursor: pointer;
+            padding: 0 0.06em;
+            transition: color 0.13s;
+        }
+
+            .agent-remove-btn:hover, .agent-remove-btn:focus {
+                color: #fd273b;
+            }
+
+        .agent-description {
+            margin-top: 0.14em;
+            font-size: 0.97em;
+            background: #182330;
+            color: #a4e5ff;
+            border-radius: 7px;
+            border: 1px solid #25325d;
+            padding: 6px 0.76em 7px 0.76em;
+            min-height: 43px;
+            resize: vertical;
+        }
+
+            .agent-description:focus {
+                outline: none;
+                background: #25345c;
+                border-color: #50d6ff;
+            }
+
+        .add-agent-btn {
+            z-index: 4; /* so the button floats over the list's bottom! */
+        }
     </style>
 </head>
 <body>
@@ -432,7 +527,7 @@
         <img src="Images/sk-alligator-logo.png" alt="" style="width:1.3em;margin-right:.5em;vertical-align:middle;"> Agent Chat
     </button>
     <section class="agent-chat-panel" id="agentChatPanel" aria-hidden="true" style="position:fixed;left:0;right:0;bottom:-540px;height:520px;max-height:98vh;background:var(--sk-docs-surface);border-top-left-radius:32px;border-top-right-radius:32px;box-shadow:0 -8px 32px 0 #475bdf35;z-index:1040;transition:bottom.33s cubic-bezier(.38,1.22,.38,1);border-top:3px solid var(--sk-docs-border);display:flex;flex-direction:column;">
-        <div class="agent-chat-panel-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7em;padding:1.04em 2em 0.3em 2em;background:#202248;border-top-left-radius:31px;border-top-right-radius:31px;">
+        <div class="agent-chat-panel-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7em;padding::1.04em 2em 0.3em 2em;background:#202248;border-top-left-radius:31px;border-top-right-radius:31px;">
             <span class="agent-chat-title" style="font-size:1.15rem;font-weight:800;color:#a7bbff;letter-spacing:.01em;">
                 <img src="Images/sk-alligator-logo.png" alt="" style="width:1.8em;margin-right:.45em;vertical-align:middle;"> Agent Chat
             </span>
@@ -481,17 +576,22 @@
         let agents = JSON.parse(JSON.stringify(agentsDefault));
         let agentIdCounter = 3;
 
+        // MODIFIED agentCardHtml for flex row: Name (left), Final Reviewer & close (right), desc below
         function agentCardHtml(agent, index) {
+            // zebra stripe
+            var zebraClass = (index % 2 === 0) ? "agent-stripe-even" : "agent-stripe-odd";
             return `
-                        <div class="agent-card" data-agent-id="${agent.id}">
-                            <div class="agent-card-header-line">
-                                <input type="text" class="agent-name-input form-control form-control-sm" value="${agent.name.replace(/"/g, "&quot;")}" placeholder="Agent name" maxlength="60" />
+                    <div class="agent-card ${zebraClass}" data-agent-id="${agent.id}">
+                        <div class="agent-card-header-line">
+                            <input type="text" class="agent-name-input form-control form-control-sm" value="${agent.name.replace(/"/g, "&quot;")}" placeholder="Agent name" maxlength="60" />
+                            <div style="display:flex; align-items:center; gap:0.37em;">
                                 <input type="checkbox" class="final-reviewer-checkbox" ${agent.finalReviewer ? 'checked' : ''} title="Final Reviewer" id="finalr-${agent.id}">
                                 <label class="agent-final-label" for="finalr-${agent.id}">Final Reviewer</label>
-                                <button type="button" class="agent-remove-btn ms-auto" title="Remove agent" aria-label="Remove agent">&times;</button>
                             </div>
-                            <textarea class="form-control agent-description" placeholder="Description">${agent.description || ""}</textarea>
-                        </div>`;
+                            <button type="button" class="agent-remove-btn ms-auto" title="Remove agent" aria-label="Remove agent">&times;</button>
+                        </div>
+                        <textarea class="form-control agent-description" placeholder="Description">${agent.description || ""}</textarea>
+                    </div>`;
         }
         function renderAgentsList() {
             $('#agentsList').html(
@@ -647,10 +747,9 @@
                 // Determine layout: user always left, all others right (except agent chat can be left)
                 if (role === "Client") {
                     // User always left, no avatar, green bubble
-                    bubbleClasses = ''; // left is default
+                    bubbleClasses = '';
                 } else if (msgObj.AuthorName) {
                     // Agent/assistant/system with AuthorName
-                    // agent chat (with AuthorName) always left in setup phase
                     bubbleClasses = 'agent-chat-left';
                     showAvatar = true;
                     avatarHtml = `<img src="Images/sk-alligator-logo.png" class="agent-gator-avatar" alt="Semantigator avatar" />`;
@@ -659,11 +758,11 @@
                     isFinalReviewer = reviewerNames.includes(normalized);
                     if (isFinalReviewer) {
                         finalReviewerIcon = `
-                                <span class="final-reviewer-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M10 1.5a2.5 2.5 0 00-2.5 2.5v1.31A7.001 7.001 0 003 12a7 7 0 1014 0 7.001 7.001 0 00-4.5-6.69V4A2.5 2.5 0 0010 1.5zM12.5 4v1.04A7.002 7.002 0 017 12a7.002 7.002 0 015.5-6.96V4A.5.5 0 0112.5 4z"/>
-                                    </svg>
-                                </span>`;
+                                    <span class="final-reviewer-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M10 1.5a2.5 2.5 0 00-2.5 2.5v1.31A7.001 7.001 0 003 12a7 7 0 1014 0 7.001 7.001 0 00-4.5-6.69V4A2.5 2.5 0 0010 1.5zM12.5 4v1.04A7.002 7.002 0 017 12a7.002 7.002 0 015.5-6.96V4A.5.5 0 0112.5 4z"/>
+                                        </svg>
+                                    </span>`;
                     }
                     richHtml = "<div class='author-div'><span class='author-span'>" + authorName + finalReviewerIcon + "</span></div>" + richHtml;
                     bubbleCss['background-color'] = getAuthorColor(authorName);
@@ -671,15 +770,13 @@
                     userBlockedByAgent = true;
                     disableInputs();
                 } else {
-                    // Non-user, non-agent (e.g., system/assistant with no AuthorName), always right
+                    // Non-user, non-agent
                     bubbleClasses = '';
-                    // see explicit CSS above; no avatar for system/assistant on right here
                     if (userBlockedByAgent) {
                         userBlockedByAgent = false;
                         enableInputs(true);
                     }
                 }
-
                 // Build bubble element
                 let msgEl = $('<div>')
                     .addClass('chat-message Role-' + role)
@@ -758,4 +855,3 @@
     </script>
 </body>
 </html>
-

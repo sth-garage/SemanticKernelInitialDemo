@@ -97,11 +97,6 @@ public class ChatController : ControllerBase
 
             ChatMessageContent content = new ChatMessageContent();
             
-            //chatHistory.AddDeveloperMessage("The result should always be in rich HTML format - the root element must be a DIV.  Include visual elements like lists, colors, tables when appropriate to provide clarity");
-            //chatHistory.AddDeveloperMessage("Font style can be adjusted for message emphasis - bold for important for example - no tables and the text must be in a single paragraph");
-
-
-
             var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, 
                 executionSettings: openAIPromptExecutionSettings,
                 kernel: kernel);
