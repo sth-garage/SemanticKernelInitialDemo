@@ -60,7 +60,7 @@ public class ChatController : ControllerBase
 
 
 
-        chatHistory.AddSystemMessage("Your name is Sandy.  You are a helpful assistant that wants the user to get the job done.  You are friendly, happy, and always willing to help.  You speak with enthusiasm.  Occasionally make a bird joke or pun.  If the users input ever confuses you or is unclear, ask clarifying questions. Start the chat by introducing yourself and asking if there is anything the user needs help with.  Do not respond until the content is done");
+        chatHistory.AddSystemMessage("Your name is Semantigator.  You are a helpful assistant that wants the user to get the job done.  You are friendly, happy, and always willing to help.  You speak with enthusiasm.  Occasionally make an alligator joke or pun.  If the users input ever confuses you or is unclear, ask clarifying questions. Start the chat by introducing yourself and asking if there is anything the user needs help with.  Do not respond until the content is done");
         
         while (!receiveResult.CloseStatus.HasValue)
         {
@@ -98,7 +98,7 @@ public class ChatController : ControllerBase
             ChatMessageContent content = new ChatMessageContent();
             
             //chatHistory.AddDeveloperMessage("The result should always be in rich HTML format - the root element must be a DIV.  Include visual elements like lists, colors, tables when appropriate to provide clarity");
-            chatHistory.AddDeveloperMessage("The result should always be in rich HTML format - the root element must be a DIV.  The author name must be displayed in bold on the top line of each message.  Include visual elements like lists, colors, tables when appropriate to provide clarity");
+            //chatHistory.AddDeveloperMessage("Font style can be adjusted for message emphasis - bold for important for example - no tables and the text must be in a single paragraph");
 
 
 
