@@ -4,21 +4,14 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
 using OpenAI.Chat;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SemanticKernelInitialDemo
-{
-    public class Utility
-    {
 #pragma warning disable SKEXP0001
 #pragma warning disable SKEXP0110
 #pragma warning disable OPENAI001
-
-
+namespace SemanticKernelWebClient.SK
+{
+    public class Utility
+    {
         public void WriteAgentChatMessage(Microsoft.SemanticKernel.ChatMessageContent message)
         {
             // Include ChatMessageContent.AuthorName in output, if present.
@@ -30,8 +23,8 @@ namespace SemanticKernelInitialDemo
 
 
             var logLine = $"{message.Role}{authorExpression}:{codeMarker}{contentExpression}";
-            var path = @"C:\temp\agent_out_essay.txt";
-            File.AppendAllText(path, logLine + "\n");
+            //var path = @"C:\temp\agent_out_essay.txt";
+            //File.AppendAllText(path, logLine + "\n");
 
             Console.WriteLine($"\n# {message.Role}{authorExpression}:{codeMarker}{contentExpression}");
 
@@ -88,5 +81,8 @@ namespace SemanticKernelInitialDemo
                 Console.WriteLine($"  [Usage] Tokens: {totalTokens}, Input: {inputTokens}, Output: {outputTokens}");
             }
         }
+
+        
+
     }
 }
