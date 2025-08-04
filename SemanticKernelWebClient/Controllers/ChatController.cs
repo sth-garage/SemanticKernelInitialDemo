@@ -1,12 +1,20 @@
 using Agents;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Newtonsoft.Json;
 using SemanticKernelWebClient.Models;
 using System.Net.WebSockets;
 using System.Text;
+using System.Threading;
+
+#pragma warning disable OPENAI001
+#pragma warning disable SKEXP0110
+#pragma warning disable SKEXP0001
+
+#pragma warning disable OPENAI001
 
 namespace SemanticKernelWebClient.Controllers;
 
@@ -30,6 +38,7 @@ public class ChatController : ControllerBase
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            //aawait ChatController.Send(webSocket, "Hello there!  My name is Semantigator!  How can I help?");
             await Echo(webSocket, _chatCompletionService, _kernel, _modelAndKey);
         }
         else
@@ -48,20 +57,25 @@ public class ChatController : ControllerBase
         // Enable planning
         OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
         {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            
         };
 
         ChatHistory chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("Your name is Semantigator.  You are a helpful assistant that wants the user to get the job done.  You are friendly, happy, and always willing to help.  You speak with enthusiasm.  Occasionally make a alligator joke or pun.  If the users input ever confuses you or is unclear, ask clarifying questions. Start the chat by introducing yourself and asking if there is anything the user needs help with.  Do not respond until the content is done.  Answer in rich html with DIV as the root node");
 
         var isAgentChat = false;
         var hasAgentQuestion = false;
         AgentPayload agentPayload = null;
         AgentManager agents = new AgentManager();
 
+        //chatHistory.AddSystemMessage("Greet the user and ask them for their name and what can you help them with today");
+
+        //chatHistory.AddSystemMessage("Your name is Semantigator.  You are a helpful assistant that wants the user to get the job done.  You are friendly, happy, and always willing to help.  You speak with enthusiasm.  Occasionally make an alligator joke or pun.  If the users input ever confuses you or is unclear, ask clarifying questions. Start the chat by introducing yourself and asking if there is anything the user needs help with.  Do not respond until the content is done");
 
 
-        chatHistory.AddSystemMessage("Your name is Semantigator.  You are a helpful assistant that wants the user to get the job done.  You are friendly, happy, and always willing to help.  You speak with enthusiasm.  Occasionally make an alligator joke or pun.  If the users input ever confuses you or is unclear, ask clarifying questions. Start the chat by introducing yourself and asking if there is anything the user needs help with.  Do not respond until the content is done");
-        
+        //await ChatController.Send(webSocket, "Hello there!  My name is Semantigator!  How can I help?");
+
         while (!receiveResult.CloseStatus.HasValue)
         {
             var bytes = new ArraySegment<byte>(buffer, 0, receiveResult.Count);
@@ -96,12 +110,14 @@ public class ChatController : ControllerBase
 
 
             ChatMessageContent content = new ChatMessageContent();
-            
+            //chatHistory.AddDeveloperMessage("The result should always be in rich HTML format - the root element must be a DIV.  The author name must be displayed in bold on the top line of each message.  Include visual elements like lists, colors, tables when appropriate to provide clarity");
+
+
             var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, 
                 executionSettings: openAIPromptExecutionSettings,
                 kernel: kernel);
 
-            chatHistory.AddMessage(result.Role, result.Content ?? string.Empty);
+            //chatHistory.AddMessage(result.Role, result.Content ?? string.Empty);
 
             var resultString = result.AsJson();
             var resultMsgBytes = Encoding.UTF8.GetBytes(resultString);

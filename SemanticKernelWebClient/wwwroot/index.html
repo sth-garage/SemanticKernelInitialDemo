@@ -231,11 +231,11 @@
         }
 
             .chat-message[data-role="Client"] {
-                justify-content: flex-start;
+                justify-content: flex-end;
             }
 
             .chat-message[data-role="Assistant"], .chat-message[data-role="System"] {
-                justify-content: flex-end;
+                justify-content: flex-start;
             }
 
             .chat-message.agent-chat-left {
@@ -303,9 +303,11 @@
         }
 
         .author-span {
-            font-weight: 800;
-            color: #72aaff;
+            color: black;
             letter-spacing: .01em;
+            border-radius: 4px;
+            background-color: white;
+            padding: 2px;
         }
 
         .final-reviewer-icon svg, .final-reviewer-icon {
@@ -813,6 +815,7 @@
                     addMessage({ Role: { Label: "System" }, Items: [{ Text: "<div style='font-style:italic'>A connection error occurred.</div>" }] }, false);
                 };
                 socket.onmessage = function (event) {
+                    debugger;
                     isWaitingReply = false;
                     let data = event.data;
                     let obj = null;
