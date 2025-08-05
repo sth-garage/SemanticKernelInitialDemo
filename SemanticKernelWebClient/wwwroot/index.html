@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat With Semantigator!</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sk-docs-dark: #16171d;
+            --sk-docs-surface: #22232d;
+            --sk-docs-light: #ffffff;
+            --sk-docs-primary: #6e42c1;
+            --sk-docs-header-gradient: linear-gradient(90deg, #5a2996 0%, #475bdf 100%);
+            --sk-docs-border: #35384a;
+            --sk-docs-accent: #79e8ff;
+            --sk-docs-agent: #5edfff;
+            --sk-docs-user: #3EF1C7;
+            --sk-docs-chat-even: #23253A;
+            --sk-docs-chat-odd: #1f223d;
+            --sk-docs-agent-final: #fad315;
+            --sk-agent-stripe-even: #23566333;
+            --sk-agent-stripe-odd: #22232d;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI','SegoeUI','Arial','sans-serif';
+            background: var(--sk-docs-dark);
+            color: var(--sk-docs-light);
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .spq-header {
+            background: var(--sk-docs-header-gradient);
+            color: #fff;
+            padding: 36px 0 24px 0;
+            text-align: center;
+            box-shadow: 0 3px 32px #2e1d5360;
+            position: relative;
+        }
+
+            .spq-header .subtitle {
+                font-size: 2.8rem;
+                letter-spacing: .01em;
+                font-weight: 800;
+                margin: 0.7em 0 0.2em 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+            }
+
+        .gator-avatar {
+            width: 76px;
+            height: 76px;
+            background: #fff;
+            border-radius: 46px;
+            box-shadow: 0 3px 10px #39277650;
+            border: 3px solid #4d388a;
+        }
+
+        .translate-toggle-btn {
+            position: absolute;
+            top: 18px;
+            right: 26px;
+            background: #191846;
+            color: var(--sk-docs-accent);
+            border: 1.5px solid var(--sk-docs-border);
+            border-radius: 11px;
+            padding: 7px 15px 7px 13px;
+            font-size: 1.02rem;
+            font-family: inherit;
+            font-weight: 700;
+            box-shadow: 0 1px 8px #5edfff22;
+            cursor: pointer;
+            z-index: 3;
+            transition: background 0.16s, color 0.18s, border-color 0.13s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+            .translate-toggle-btn svg {
+                width: 1.28em;
+                height: 1.28em;
+                margin-bottom: 2px;
+                vertical-align: middle;
+            }
+
+            .translate-toggle-btn:hover, .translate-toggle-btn:focus {
+                background: #292b56;
+                color: #fff;
+                border-color: var(--sk-docs-accent);
+            }
+
+        #google_translate_element {
+            position: absolute;
+            top: 54px;
+            right: 22px;
+            z-index: 20;
+            background: var(--sk-docs-surface);
+            border-radius: 9px;
+            padding: 10px 17px;
+            min-width: 165px;
+            min-height: 32px;
+            box-shadow: 0 3px 24px #5edfff29;
+            border: 1.5px solid var(--sk-docs-border);
+            display: none;
+        }
+
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100vw;
+            min-height: 450px;
+            background: var(--sk-docs-dark);
+            position: relative;
+        }
+
+        .chat-pane {
+            display: flex;
+            flex-direction: column;
+            width: 95vw;
+            min-height: 780px;
+            margin: 32px 0;
+            background: var(--sk-docs-surface);
+            border-radius: 24px;
+            box-shadow: 0 4px 28px #2b185d80;
+            border: 2px solid var(--sk-docs-border);
+            position: relative;
+        }
+
+        .chat-messages-area {
+            flex: 1 1 auto;
+            background: var(--sk-docs-chat-odd);
+            border-radius: 20px;
+            border: 1.5px solid var(--sk-docs-border);
+            margin: 18px 14px 1.2rem 14px;
+            box-shadow: 0 4px 18px 0 #475bdf11;
+            padding: 30px 13px 21px 13px;
+            max-height: 60vh;
+            min-height: 170px;
+            overflow-y: auto;
+            position: relative;
+            transition: border-color .18s;
+            scroll-behavior: smooth;
+        }
+
+        .chat-input-row {
+            margin-bottom: 8px;
+            display: flex;
+            gap: 0.8rem;
+            padding-top: 6px;
+            margin-left: 3%;
+            width: 90%;
+            align-items: center;
+        }
+
+            .chat-input-row input, .chat-input-row button {
+                font-size: 1.08rem;
+            }
+
+        #sendMessage.form-control {
+            border-radius: 11px;
+            border: 1.5px solid var(--sk-docs-border);
+            background: #18192B;
+            color: #fff;
+        }
+
+        #sendMessage:focus {
+            border-color: var(--sk-docs-accent);
+            box-shadow: 0 2px 4px #475ff790;
+            background: #232344;
+        }
+
+        #sendButton.btn {
+            background: var(--sk-docs-primary);
+            color: #fff;
+            font-weight: 800;
+            border-radius: 8px;
+            padding: 8px 22px;
+            box-shadow: 0 2px 8px #471be765;
+            border: none;
+        }
+
+            #sendButton.btn:disabled {
+                background: #483984;
+                color: #aebbce;
+            }
+
+            #sendButton.btn:not(:disabled):hover {
+                background: #26288d;
+            }
+
+        .file-upload-btn {
+            background: #25253b;
+            border: none;
+            height: 36px;
+            width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            padding: 0;
+            transition: background .18s;
+        }
+
+            .file-upload-btn:hover, .file-upload-btn:focus {
+                background: #232366;
+            }
+
+            .file-upload-btn svg {
+                width: 20px;
+                height: 20px;
+                color: var(--sk-docs-accent);
+            }
+
+        .chat-message {
+            display: flex;
+            margin-bottom: 1.03rem;
+            align-items: flex-end;
+            gap: 0.4rem;
+            animation: fadeIn 0.18s cubic-bezier(.15,.94,.35,1) forwards;
+            opacity: 0;
+            will-change: opacity,transform;
+            cursor: pointer;
+        }
+
+            .chat-message[data-role="Client"] {
+                justify-content: flex-end;
+            }
+
+            .chat-message[data-role="Assistant"], .chat-message[data-role="System"] {
+                justify-content: flex-start;
+            }
+
+            .chat-message.agent-chat-left {
+                justify-content: center;
+                align-content: center;
+            }
+
+        /* MODIFIED CHAT BUBBLES */
+
+        .chat-bubble {
+            padding: 1em 1.24em;
+            font-size: 1.13rem;
+            border-radius: 19px;
+            min-width: 32px;
+            max-width: 83vw;
+            word-break: break-word;
+            box-shadow: 0 2px 11px -6px #5246c3;
+            margin-top: 2px;
+            font-family: inherit;
+            background: #f0ead6 !important; /* always white */
+            color: #000 !important; /* always black */
+            border: 2px solid var(--sk-docs-border); /* default border-color override, per-role below */
+            transition: background .14s, color .15s;
+        }
+
+        /* Put original bubble color onto border for each role */
+        .chat-message[data-role="Client"] .chat-bubble {
+            border-color: var(--sk-docs-user) !important;
+            border-width: 5px !important;
+        }
+
+        .chat-message[data-role="Assistant"] .chat-bubble {
+            border-color: var(--sk-docs-primary) !important;
+            border-width: 5px !important;
+        }
+
+        .chat-message[data-role="System"] .chat-bubble {
+            border-color: #25253d !important;
+            border-width: 5px !important;
+        }
+
+        .chat-message.agent-chat-left .chat-bubble {
+            border-color: var(--sk-docs-agent) !important;
+            border-width: 5px !important;
+        }
+        /* When dynamically applied agent color:
+           Inline style will override, see JS using .css('border-color', ...);
+           So for dynamic agent colors use inline set in JS.
+        */
+
+        .author-div {
+            font-size: 1.01rem;
+            font-weight: 700;
+            color: #7edfff;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .author-span {
+            color: black;
+            letter-spacing: .01em;
+            border-radius: 4px;
+            background-color: white;
+            padding: 2px;
+        }
+
+        .final-reviewer-icon svg, .final-reviewer-icon {
+            width: 1.05em;
+            height: 1.05em;
+            color: var(--sk-docs-agent-final);
+            margin-left: 0.12em;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 800px) {
+            .main-container {
+                align-items: stretch;
+            }
+
+            .chat-pane {
+                width: 99vw;
+                margin: 12px 0;
+            }
+
+            .spq-header .subtitle {
+                font-size: 1.7rem;
+                gap: .8rem;
+            }
+
+            .gator-avatar {
+                width: 54px;
+                height: 54px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-container {
+                margin-top: 12px;
+            }
+
+            .translate-toggle-btn {
+                top: 10px;
+                right: 7px;
+            }
+
+            #google_translate_element {
+                top: 44px;
+                right: 7px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(13px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .padding40 {
+            padding: 2%;
+        }
+
+        /* -- The rest of your CSS for agents, etc., stays unmodified -- */
+        .agents-list-container {
+            overflow-y: auto;
+            max-height: 320px;
+            min-height: 120px;
+            padding-bottom: 40px;
+        }
+
+        .agent-card {
+            background: transparent;
+            border-radius: 9px;
+            padding: 0.7em 1.1em 0.9em 1.1em;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 7px #5edfff11;
+            border: 1.5px solid var(--sk-docs-border);
+            transition: box-shadow 0.14s;
+            position: relative;
+        }
+
+            .agent-card.agent-stripe-even {
+                background: var(--sk-agent-stripe-even);
+            }
+
+            .agent-card.agent-stripe-odd {
+                background: var(--sk-agent-stripe-odd);
+            }
+
+        .agent-card-header-line {
+            display: flex;
+            align-items: center;
+            gap: 0.80em;
+            margin-bottom: 0.45em;
+            width: 100%;
+        }
+
+        .agent-name-input {
+            flex: 1 0 68px;
+            min-width: 0;
+            margin-right: 0.36em;
+            font-weight: 600;
+            background: #181a22;
+            color: #dff6ff;
+            border-radius: 7px;
+            border: 1px solid #354669;
+            padding: 2px 0.6em;
+        }
+
+            .agent-name-input:focus {
+                outline: none;
+                border-color: var(--sk-docs-accent);
+                background: #212435;
+            }
+
+        .final-reviewer-checkbox {
+            margin-left: 0.7em;
+            margin-right: 0.22em;
+            accent-color: var(--sk-docs-agent-final);
+            transform: scale(1.11);
+        }
+
+        .agent-final-label {
+            margin: 0 1.2em 0 0;
+            font-size: 0.98em;
+            color: #fde266;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .agent-remove-btn {
+            background: transparent;
+            border: none;
+            color: #e85169;
+            font-size: 1.8em;
+            font-weight: 800;
+            line-height: 0.6;
+            margin-left: auto;
+            cursor: pointer;
+            padding: 0 0.06em;
+            transition: color 0.13s;
+        }
+
+            .agent-remove-btn:hover, .agent-remove-btn:focus {
+                color: #fd273b;
+            }
+
+        .agent-description {
+            margin-top: 0.14em;
+            font-size: 0.97em;
+            background: #182330;
+            color: #a4e5ff;
+            border-radius: 7px;
+            border: 1px solid #25325d;
+            padding: 6px 0.76em 7px 0.76em;
+            min-height: 43px;
+            resize: vertical;
+        }
+
+            .agent-description:focus {
+                outline: none;
+                background: #25345c;
+                border-color: #50d6ff;
+            }
+
+        .add-agent-btn {
+            z-index: 4;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="spq-header">
+        <button class="translate-toggle-btn" id="showTranslateBtn" title="Translate this page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 4v2h14M6 8v8m0-8H2m4 0l6 12m2-2l4-6m0 0h-5.7m5.7 0l.7-1" />
+            </svg>
+            Translate
+        </button>
+        <div id="google_translate_element"></div>
+        <div class="subtitle">
+            <img src="Images/sk-alligator-logo.png" class="gator-avatar" alt="Semantigator cartoon alligator" />
+            Chat With Semantigator!
+        </div>
+    </div>
+    <div class="main-container">
+        <section class="chat-pane shadow" id="chatPane">
+            <div class="chat-messages-area" id="chatArea" tabindex="0" aria-label="Chat messages"></div>
+            <div class="chat-input-row">
+                <input type="text" id="sendMessage" class="form-control" placeholder="Type a message…" aria-label="Message to send..." autocomplete="off" />
+                <button id="sendButton" class="btn" type="button" disabled>SEND</button>
+                <button id="fileUploadBtn" class="file-upload-btn" type="button" title="Upload file" aria-label="Upload file">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 16V4M8 8l4-4 4 4M16 16v4H8v-4"></path>
+                    </svg>
+                </button>
+            </div>
+        </section>
+    </div>
+    <!-- Chat Message Detail Modal -->
+    <div class="modal fade" id="chatDetailModal" tabindex="-1" aria-labelledby="chatDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="chatDetailModalLabel">Message Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="chatDetailModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Agent Chat Tab and Panel -->
+    <button class="agent-chat-tab" id="agentChatTab" type="button" aria-controls="agentChatPanel" aria-expanded="false" style="position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:1030;background:var(--sk-docs-primary);color:#fff;font-size:1.13rem;border-radius:20px 20px 0 0;padding:0.65em 2.1em;box-shadow:0 -2px 14px 0 #475bdf55;cursor:pointer;font-family:inherit;letter-spacing:1px;font-weight:800;user-select:none;border:none;">
+        <img src="Images/sk-alligator-logo.png" alt="" style="width:1.3em;margin-right:.5em;vertical-align:middle;"> Agent Chat
+    </button>
+    <section class="agent-chat-panel" id="agentChatPanel" aria-hidden="true" style="position:fixed;left:0;right:0;bottom:-540px;height:520px;max-height:98vh;background:var(--sk-docs-surface);border-top-left-radius:32px;border-top-right-radius:32px;box-shadow:0 -8px 32px 0 #475bdf35;z-index:1040;transition:bottom.33s cubic-bezier(.38,1.22,.38,1);border-top:3px solid var(--sk-docs-border);display:flex;flex-direction:column;">
+        <div class="agent-chat-panel-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7em;padding::1.04em 2em 0.3em 2em;background:#202248;border-top-left-radius:31px;border-top-right-radius:31px;">
+            <span class="agent-chat-title" style="font-size:1.15rem;font-weight:800;color:#a7bbff;letter-spacing:.01em;">
+                <img src="Images/sk-alligator-logo.png" alt="" style="width:1.8em;margin-right:.45em;vertical-align:middle;"> Agent Chat
+            </span>
+            <button class="agent-close-btn" id="agentPanelClose" type="button">Close</button>
+        </div>
+        <div class="agents-list-container padding40" id="agentsList"></div>
+        <button type="button" class="add-agent-btn" id="addAgentBtn" title="Add new agent" aria-label="Add agent" style="background:var(--sk-docs-agent);border:none;color:white;width:41px;height:41px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.04rem;position:absolute;bottom:2em;left:2.0em;box-shadow:0 2px 12px #47d0ff47;transition:background .12s, color .16s;">+</button>
+        <button type="button" class="start-chat-btn" id="startChatBtn" style="position:absolute;right:2.0em;bottom:2em;background:var(--sk-docs-primary);color:#fff;font-size:1.07rem;font-weight:800;border:none;border-radius:13px;padding:0.56em 1.9em;box-shadow:0 2px 13px #471be779;transition:background .14s, color .16s;">Start Chat</button>
+    </section>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script>
+        function googleTranslateElementInit() {
+            $('#google_translate_element').hide();
+            new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,es,pt' }, 'google_translate_element');
+        }
+        $(function () {
+            const $showBtn = $('#showTranslateBtn');
+            const $gtElem = $('#google_translate_element');
+            let visible = false;
+            $showBtn.on('click', function (e) {
+                e.stopPropagation();
+                visible = !visible;
+                if (visible) {
+                    $gtElem.stop(true, true).fadeIn(180);
+                } else {
+                    $gtElem.stop(true, true).fadeOut(120);
+                }
+            });
+            $(document).on('click', function (e) {
+                if (!$gtElem.is(e.target) && $gtElem.has(e.target).length === 0 &&
+                    !$showBtn.is(e.target) && $showBtn.has(e.target).length === 0) {
+                    $gtElem.fadeOut(120);
+                    visible = false;
+                }
+            });
+        });
+
+        let socket;
+        let wsUrl = (location.protocol === "https:" ? "wss://" : "ws://") + location.hostname + (location.port ? (":" + location.port) : "") + "/ws";
+        const agentsDefault = [
+            { id: 1, name: "Anna", description: "Handles data analysis tasks.", finalReviewer: false },
+            { id: 2, name: "Ben", description: "Oversees compliance and policy.", finalReviewer: true }
+        ];
+        let agents = JSON.parse(JSON.stringify(agentsDefault));
+        let agentIdCounter = 3;
+
+        // MODIFIED agentCardHtml for flex row: Name (left), Final Reviewer & close (right), desc below
+        function agentCardHtml(agent, index) {
+            // zebra stripe
+            var zebraClass = (index % 2 === 0) ? "agent-stripe-even" : "agent-stripe-odd";
+            return `
+                    <div class="agent-card ${zebraClass}" data-agent-id="${agent.id}">
+                        <div class="agent-card-header-line">
+                            <input type="text" class="agent-name-input form-control form-control-sm" value="${agent.name.replace(/"/g, "&quot;")}" placeholder="Agent name" maxlength="60" />
+                            <div style="display:flex; align-items:center; gap:0.37em;">
+                                <input type="checkbox" class="final-reviewer-checkbox" ${agent.finalReviewer ? 'checked' : ''} title="Final Reviewer" id="finalr-${agent.id}">
+                                <label class="agent-final-label" for="finalr-${agent.id}">Final Reviewer</label>
+                            </div>
+                            <button type="button" class="agent-remove-btn ms-auto" title="Remove agent" aria-label="Remove agent">&times;</button>
+                        </div>
+                        <textarea class="form-control agent-description" placeholder="Description">${agent.description || ""}</textarea>
+                    </div>`;
+        }
+        function renderAgentsList() {
+            $('#agentsList').html(
+                agents.map(agentCardHtml).join('') ||
+                `<div style="color:#7baaff;margin-top:2em;">No agents. Add one below.</div>`
+            );
+        }
+        let isWaitingReply = false;
+        function getFinalReviewerNames() {
+            return agents.filter(a => a.finalReviewer).map(a => a.name.trim()).filter(n => n);
+        }
+        $(function () {
+            var $tab = $('#agentChatTab');
+            var $panel = $('#agentChatPanel');
+            var $close = $('#agentPanelClose');
+            function openAgentPanel() {
+                $panel.addClass('open').attr('aria-hidden', 'false').css("bottom", "0");
+                $tab.addClass('open').attr('aria-expanded', 'true');
+            }
+            function closeAgentPanel() {
+                $panel.removeClass('open').attr('aria-hidden', 'true').css("bottom", "-540px");
+                $tab.removeClass('open').attr('aria-expanded', 'false');
+            }
+            $tab.on('click keypress', function (e) {
+                if (e.type === "click" || (e.type === "keypress" && (e.key === "Enter" || e.key === " "))) {
+                    if ($panel.hasClass('open')) {
+                        closeAgentPanel();
+                    } else {
+                        openAgentPanel();
+                        setTimeout(() => { $('#addAgentBtn').trigger('focus'); }, 200);
+                    }
+                }
+            });
+            $close.on('click', function () { closeAgentPanel(); });
+            $(document).on('keydown', function (e) {
+                if (e.key === "Escape" && $panel.hasClass('open')) {
+                    closeAgentPanel();
+                }
+            });
+            renderAgentsList();
+            $('#addAgentBtn').on('click', function () {
+                let wasEmpty = agents.length === 0;
+                agents.push({ id: agentIdCounter++, name: "", description: "", finalReviewer: wasEmpty });
+                if (wasEmpty) agents[0].finalReviewer = true;
+                renderAgentsList();
+            });
+            $('#agentsList').on('input', '.agent-name-input', function () {
+                let idx = $(this).closest('.agent-card').index();
+                agents[idx].name = $(this).val();
+            });
+            $('#agentsList').on('input', '.agent-description', function () {
+                let idx = $(this).closest('.agent-card').index();
+                agents[idx].description = $(this).val();
+            });
+            $('#agentsList').on('click', '.agent-remove-btn', function () {
+                let idx = $(this).closest('.agent-card').index();
+                agents.splice(idx, 1);
+                if (agents.length > 0 && !agents.some(a => a.finalReviewer)) {
+                    agents[0].finalReviewer = true;
+                }
+                renderAgentsList();
+            });
+            $('#agentsList').on('change', '.final-reviewer-checkbox', function () {
+                let idx = $(this).closest('.agent-card').index();
+                agents.forEach((a, i) => a.finalReviewer = (i === idx));
+                renderAgentsList();
+            });
+            $('#startChatBtn').on('click', function () {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: "agents", agents: agents }));
+                } else {
+                    alert("WebSocket not connected, can't send agents.");
+                }
+                closeAgentPanel();
+            });
+            $('#fileUploadBtn').on('click', function () {
+                alert('File upload button clicked!');
+            });
+        });
+
+        // Color/side logic: user always left, others right, agent chat is always left in setup
+        const agentColors = [
+            '#49a2fc', '#8c6efa', '#4ce4ec', '#fa7ced', '#fad315', '#c2fffa', '#bbd1ff', '#8feaff'
+        ];
+        const authorColorMap = {};
+        function hashStringToIndex(str, paletteLength) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash); hash |= 0;
+            }
+            return Math.abs(hash) % paletteLength;
+        }
+        function getAuthorColor(authorName) {
+            if (!authorColorMap[authorName]) {
+                const idx = hashStringToIndex(authorName, agentColors.length);
+                authorColorMap[authorName] = agentColors[idx];
+            }
+            return authorColorMap[authorName];
+        }
+        let userBlockedByAgent = false;
+        $(function () {
+            let chatArea = $("#chatArea");
+            let sendMessage = $("#sendMessage");
+            let sendButton = $("#sendButton");
+            function enableInputs(state = true) {
+                if (userBlockedByAgent) {
+                    sendMessage.prop("disabled", true);
+                    sendButton.prop("disabled", true);
+                    return;
+                }
+                sendMessage.prop("disabled", !state);
+                sendButton.prop("disabled", !state || sendMessage.val().trim() === "");
+            }
+            function disableInputs() {
+                sendMessage.prop("disabled", true);
+                sendButton.prop("disabled", true);
+            }
+            sendMessage.on("input", function () {
+                sendButton.prop("disabled", sendMessage.val().trim() === "" || isWaitingReply || userBlockedByAgent);
+            });
+            function showChatDetailModal(msgObj) {
+                let detailTitle = (msgObj.Role?.Label ? `Message Details – ${msgObj.Role.Label}` : 'Message Details');
+                let html = `<div class="mb-3"><strong>Role:</strong> ${msgObj.Role?.Label || "Unknown"}</div>`;
+                if (msgObj.Items && Array.isArray(msgObj.Items)) {
+                    html += `<div class="mb-3"><strong>Items:</strong><pre style="white-space:pre-wrap;background:#1b2040;padding:1em;border-radius:7px;color:#c9f5ff;">${msgObj.Items.map(it => it.Text).join('\n')}</pre></div>`;
+                }
+                if (msgObj.Text && (!msgObj.Items || msgObj.Items.length === 0)) {
+                    html += `<div class="mb-3"><strong>Text:</strong><pre style="white-space:pre-wrap;background:#1b2040;padding:1em;border-radius:7px;color:#c9f5ff;">${msgObj.Text}</pre></div>`;
+                }
+                html += `<div><strong>Raw Message Object:</strong><pre style="white-space:pre-wrap;background:#181a32;padding:1em;border-radius:7px;font-size:.99em;color:#89c9ff;">${JSON.stringify(msgObj, null, 2)}</pre></div>`;
+                $("#chatDetailModalLabel").text(detailTitle);
+                $("#chatDetailModalBody").html(html);
+                let modalInstance = bootstrap.Modal.getOrCreateInstance(document.getElementById('chatDetailModal'));
+                modalInstance.show();
+            }
+
+            function addMessage(msgObj, isOwn) {
+                let role = msgObj.Role?.Label || (isOwn ? "Client" : "Assistant");
+                let richHtml = '';
+                if (msgObj.Items && msgObj.Items[0]?.Text) {
+                    richHtml = msgObj.Items[0].Text;
+                } else if (msgObj.Text) {
+                    richHtml = msgObj.Text;
+                } else if (typeof msgObj === 'string') {
+                    richHtml = msgObj;
+                } else {
+                    richHtml = JSON.stringify(msgObj);
+                }
+
+                let bubbleCss = {}, bubbleClasses = '', finalReviewerIcon = '', avatarHtml = '', showAvatar = false, parentElement = '<div>';
+                let isFinalReviewer = false, authorName = msgObj.AuthorName || '';
+
+                // Determine layout: user always left, all others right (except agent chat can be left)
+                if (role === "Client") {
+                    // User always left, no avatar, green bubble
+                    bubbleClasses = '';
+                } else if (msgObj.AuthorName) {
+                    // Agent/assistant/system with AuthorName
+                    bubbleClasses = 'agent-chat-left';
+                    showAvatar = true;
+                    avatarHtml = `<img src="Images/sk-alligator-logo.png" class="agent-gator-avatar" alt="Semantigator avatar" />`;
+                    let normalized = authorName.trim().toLowerCase();
+                    let reviewerNames = getFinalReviewerNames().map(n => n.trim().toLowerCase());
+                    isFinalReviewer = reviewerNames.includes(normalized);
+                    if (isFinalReviewer) {
+                        finalReviewerIcon = `
+                                    <span class="final-reviewer-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M10 1.5a2.5 2.5 0 00-2.5 2.5v1.31A7.001 7.001 0 003 12a7 7 0 1014 0 7.001 7.001 0 00-4.5-6.69V4A2.5 2.5 0 0010 1.5zM12.5 4v1.04A7.002 7.002 0 017 12a7.002 7.002 0 015.5-6.96V4A.5.5 0 0112.5 4z"/>
+                                        </svg>
+                                    </span>`;
+                    }
+                    richHtml = "<div class='author-div'><span class='author-span'>" + authorName + finalReviewerIcon + "</span></div>" + richHtml;
+                    bubbleCss['background-color'] = getAuthorColor(authorName);
+                    bubbleCss['color'] = "#131e2a";
+                    userBlockedByAgent = true;
+                    disableInputs();
+                } else {
+                    // Non-user, non-agent
+                    bubbleClasses = '';
+                    if (userBlockedByAgent) {
+                        userBlockedByAgent = false;
+                        enableInputs(true);
+                    }
+                }
+                // Build bubble element
+                let msgEl = $('<div>')
+                    .addClass('chat-message Role-' + role)
+                    .addClass(bubbleClasses)
+                    .attr('data-role', role)
+                    .attr('tabindex', 0)
+                    .data('chatMessage', msgObj);
+
+                if (showAvatar) {
+                    //msgEl.append(avatarHtml);
+                }
+                msgEl.append($('<div>').addClass('chat-bubble').css(bubbleCss).html(richHtml));
+                chatArea.append(msgEl);
+                setTimeout(() => { msgEl.css('opacity', 1); }, 40);
+                chatArea[0].scrollTop = chatArea[0].scrollHeight;
+                msgEl.on('click keypress', function (event) {
+                    if (event.type === 'click' || (event.type === 'keypress' && (event.key === 'Enter' || event.key === ' '))) {
+                        showChatDetailModal($(this).data('chatMessage'));
+                    }
+                });
+            }
+
+            function connectSocket() {
+                socket = new WebSocket(wsUrl);
+                socket.onopen = function () {
+                    enableInputs(true);
+                };
+                socket.onclose = function (event) {
+                    disableInputs();
+                    addMessage({ Role: { Label: "System" }, Items: [{ Text: "<div style='font-style:italic'>Connection closed.</div>" }] }, false);
+                };
+                socket.onerror = function () {
+                    disableInputs();
+                    addMessage({ Role: { Label: "System" }, Items: [{ Text: "<div style='font-style:italic'>A connection error occurred.</div>" }] }, false);
+                };
+                socket.onmessage = function (event) {
+                    debugger;
+                    isWaitingReply = false;
+                    let data = event.data;
+                    let obj = null;
+                    try { obj = JSON.parse(data); }
+                    catch { obj = { Role: { Label: "Assistant" }, Items: [{ Text: data }] }; }
+                    addMessage(obj, false);
+                    if (!obj.AuthorName && !userBlockedByAgent) enableInputs(true);
+                    document.getElementById('sendMessage').focus();
+                };
+                disableInputs();
+            }
+            connectSocket();
+
+            function sendCurrentMessage() {
+                if (!socket || socket.readyState !== WebSocket.OPEN || isWaitingReply || userBlockedByAgent) return;
+                var data = sendMessage.val();
+                if (!data.trim()) return;
+                isWaitingReply = true;
+                enableInputs(false);
+                addMessage({ Role: { Label: "Client" }, Items: [{ Text: $('<div/>').text(data).html() }], AuthorName: "Client" }, true);
+                socket.send(data);
+                sendMessage.val("").focus();
+                sendButton.prop('disabled', true);
+            }
+
+            sendButton.on('click', sendCurrentMessage);
+            sendMessage.on('keydown', function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    sendCurrentMessage();
+                }
+            });
+
+            function focusInputWhenEnabled() {
+                if (!sendMessage.prop("disabled")) sendMessage.trigger("focus");
+                else setTimeout(focusInputWhenEnabled, 250);
+            }
+            setTimeout(focusInputWhenEnabled, 600);
+        });
+    </script>
+</body>
+</html>

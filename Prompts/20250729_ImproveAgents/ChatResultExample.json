@@ -1,0 +1,36 @@
+{
+  "$type": "ChatMessageContent",
+  "Role": {
+    "Label": "Assistant"
+  },
+  "Items": [
+    {
+      "$type": "TextContent",
+      "Text": "\u003Cdiv class=\u0022Role-Assistant\u0022\u003Etest\u003C/div\u003E"
+    }
+  ],
+  "ModelId": "gpt-4.1-nano",
+  "Metadata": {
+    "Id": "chatcmpl-BynfNJjiBaxBUinBGwqIaTxQ5pjAT",
+    "CreatedAt": "2025-07-29T23:04:57+00:00",
+    "SystemFingerprint": "fp_38343a2f8f",
+    "Usage": {
+      "OutputTokenCount": 11,
+      "InputTokenCount": 112,
+      "TotalTokenCount": 123,
+      "OutputTokenDetails": {
+        "ReasoningTokenCount": 0,
+        "AudioTokenCount": 0,
+        "AcceptedPredictionTokenCount": 0,
+        "RejectedPredictionTokenCount": 0
+      },
+      "InputTokenDetails": {
+        "AudioTokenCount": 0,
+        "CachedTokenCount": 0
+      }
+    },
+    "Refusal": null,
+    "FinishReason": "Stop",
+    "ContentTokenLogProbabilities": []
+  }
+}
