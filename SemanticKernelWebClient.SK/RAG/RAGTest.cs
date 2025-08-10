@@ -1,0 +1,72 @@
+﻿using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Connectors.InMemory;
+using OpenAI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SemanticKernelWebClient.SK.RAG
+{
+    internal class FinanceInfo
+    {
+        [VectorStoreKey]
+        public string Key { get; set; } = string.Empty;
+
+        [VectorStoreData]
+        public string Text { get; set; } = string.Empty;
+
+        // Note that the vector property is typed as a string, and
+        // its value is derived from the Text property. The string
+        // value will however be converted to a vector on upsert and
+        // stored in the database as a vector.
+        [VectorStoreVector(1536)]
+        public string Embedding => this.Text;
+    }
+
+    public class RAGTest
+    {
+        public async Task Blah(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
+        {
+            // The data model
+
+
+            // Create an OpenAI embedding generator.
+            //var embeddingGenerator = new OpenAIClient("your key")
+            //    .GetEmbeddingClient("your chosen model")
+            //    .AsIEmbeddingGenerator();
+
+            // Use the embedding generator with the vector store.
+            var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+            var collection = vectorStore.GetCollection<string, FinanceInfo>("finances");
+            await collection.EnsureCollectionExistsAsync();
+
+            // Create some test data.
+            string[] budgetInfo =
+            {
+                "The budget for 2020 is EUR 100 000",
+                "The budget for 2021 is EUR 120 000",
+                "The budget for 2022 is EUR 150 000",
+                "The budget for 2023 is EUR 200 000",
+                "The budget for 2024 is EUR 364 000"
+            };
+
+            // Embeddings are generated automatically on upsert.
+            var records = budgetInfo.Select((input, index) => new FinanceInfo { Key = index.ToString(), Text = input });
+            await collection.UpsertAsync(records);
+
+            // Embeddings for the search is automatically generated on search.
+            var searchResult = collection.SearchAsync(
+                "What is my budget for 2024?",
+                top: 1);
+
+            // Output the matching result.
+            await foreach (var result in searchResult)
+            {
+                Console.WriteLine($"Key: {result.Record.Key}, Text: {result.Record.Text}");
+            }
+        }
+    }
+}

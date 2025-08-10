@@ -1,5 +1,6 @@
 using Agents;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -18,6 +19,10 @@ var webBuilder = WebApplication.CreateBuilder(args);
 
 webBuilder.Services.AddControllers();
 
+
+// AIzaSyDsFlSg9C5UKx2dW0NF82riJySbEVXtstE
+// 253652338022
+
 var configBuilder = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
 var apiKey = configBuilder["AI:ApiKey"];
 var modelId = configBuilder["AI:Model"];
@@ -25,11 +30,14 @@ var apiUrl = configBuilder["AI:ApiUrl"];
 
 
 SKBuilder skBuilder = new SKBuilder();
-var semanticKernelBuildResult = skBuilder.BuildSemanticKernel(apiKey, modelId, apiUrl);
+var semanticKernelBuildResult = await skBuilder.BuildSemanticKernel(apiKey, modelId, apiUrl);
 
 webBuilder.Services.AddSingleton<IChatCompletionService>(semanticKernelBuildResult.ChatCompletionService);
 webBuilder.Services.AddSingleton<Kernel>(semanticKernelBuildResult.Kernel);
 webBuilder.Services.AddSingleton<ModelAndKey>(new ModelAndKey { Key = apiKey, ModelId = modelId });
+
+
+
 
 
 // Enable planning
