@@ -27,7 +27,8 @@ namespace SemanticKernelWebClient.SK
             .AddOpenAITextToAudio(
                 modelId: "gpt-4o-mini-tts",
                 apiKey: apiKey
-            );
+            )
+            .AddOpenAIEmbeddingGenerator("text-embedding-3-small", apiKey);
 
             // Plugins
 
@@ -38,23 +39,9 @@ namespace SemanticKernelWebClient.SK
                 skBuilder.Plugins.AddFromType<TimePlugin>();
             }
 
-            skBuilder.Services.AddOpenAIEmbeddingGenerator("text-embedding-3-small", apiKey);
-
-
-            
-
-
-            // Create an embedding generation service.
-            //var embeddingGenerator = new OpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
-            //    .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            //    .AsIEmbeddingGenerator(1536);
 
             // Build the kernel
             Kernel kernel = skBuilder.Build();
-
-            
-            var test2 = kernel.GetAllServices<object>();
-            //await test.Blah();
 
 
             var serviceCollection = new ServiceCollection();

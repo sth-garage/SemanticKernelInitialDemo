@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
 using OpenAI;
+using Qdrant.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,7 @@ namespace SemanticKernelWebClient.SK.RAG
     internal class FinanceInfo
     {
         [VectorStoreKey]
-        public string Key { get; set; } = string.Empty;
+        public Guid Key { get; set; } = Guid.NewGuid();
 
         [VectorStoreData]
         public string Text { get; set; } = string.Empty;
@@ -39,8 +41,17 @@ namespace SemanticKernelWebClient.SK.RAG
             //    .AsIEmbeddingGenerator();
 
             // Use the embedding generator with the vector store.
-            var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
-            var collection = vectorStore.GetCollection<string, FinanceInfo>("finances");
+            //var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+
+            var vectorStore = new QdrantVectorStore(
+                new QdrantClient("localhost"),
+                ownsClient: true,
+                new QdrantVectorStoreOptions
+                {
+                    EmbeddingGenerator = embeddingGenerator
+                });
+
+            var collection = vectorStore.GetCollection<Guid, FinanceInfo>("finances");
             await collection.EnsureCollectionExistsAsync();
 
             // Create some test data.
@@ -54,7 +65,7 @@ namespace SemanticKernelWebClient.SK.RAG
             };
 
             // Embeddings are generated automatically on upsert.
-            var records = budgetInfo.Select((input, index) => new FinanceInfo { Key = index.ToString(), Text = input });
+            var records = budgetInfo.Select((input, index) => new FinanceInfo { Key = Guid.NewGuid(), Text = input });
             await collection.UpsertAsync(records);
 
             // Embeddings for the search is automatically generated on search.
