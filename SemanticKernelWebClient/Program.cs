@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.TextToAudio;
 using OpenAI.Images;
 using SemanticKernelWebClient.Models;
@@ -32,6 +33,7 @@ var apiUrl = configBuilder["AI:ApiUrl"];
 SKBuilder skBuilder = new SKBuilder();
 var semanticKernelBuildResult = await skBuilder.BuildSemanticKernel(apiKey, modelId, apiUrl);
 
+webBuilder.Services.AddSingleton<QdrantVectorStore>(semanticKernelBuildResult.QdrantVectorStore);
 webBuilder.Services.AddSingleton<IChatCompletionService>(semanticKernelBuildResult.ChatCompletionService);
 webBuilder.Services.AddSingleton<Kernel>(semanticKernelBuildResult.Kernel);
 webBuilder.Services.AddSingleton<ModelAndKey>(new ModelAndKey { Key = apiKey, ModelId = modelId });
