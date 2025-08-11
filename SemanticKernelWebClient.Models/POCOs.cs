@@ -68,6 +68,8 @@ namespace SemanticKernelWebClient.Models
 
         public bool ShouldTestRAGUploadAndSearch { get; set; } = false;
 
+        public bool ShouldAddTestRAGPlugin { get; set; } = false;
+
     }
 
     public class SemanticKernelBuilderResult

@@ -51,8 +51,12 @@ namespace SemanticKernelWebClient.SK
                 skBuilder.Plugins.AddFromType<ExportPlugin>();
                 skBuilder.Plugins.AddFromType<TimePlugin>();
                 
-                skBuilder.Plugins.AddFromType<RagTestPlugin>();
 
+            }
+
+            if (sKQuickTestOptions != null && sKQuickTestOptions.ShouldAddTestRAGPlugin)
+            {
+                skBuilder.Plugins.AddFromType<RagTestPlugin>();
             }
 
             // Build the kernel
