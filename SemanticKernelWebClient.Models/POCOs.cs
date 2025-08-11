@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.VectorData;
+﻿using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -79,5 +80,7 @@ namespace SemanticKernelWebClient.Models
         public QdrantVectorStore QdrantVectorStore { get; set; }
 
         public Kernel Kernel { get; set; }
+
+        public IEmbeddingGenerator<string, Embedding<float>> EmbeddingGenerator { get; set; }
     }
 }

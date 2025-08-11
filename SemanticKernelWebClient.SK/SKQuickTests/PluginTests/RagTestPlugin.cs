@@ -22,6 +22,9 @@ namespace SemanticKernelWebClient.SK.SKQuickTesting.PluginTests
         {
             var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
+            //var vectorStore = kernel.GetRequiredService<QdrantVectorStore>();
+
+
             var vectorStore = new QdrantVectorStore(
                new QdrantClient("localhost"),
                ownsClient: true,

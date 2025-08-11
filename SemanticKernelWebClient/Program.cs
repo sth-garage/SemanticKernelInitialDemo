@@ -31,13 +31,21 @@ var apiUrl = configBuilder["AI:ApiUrl"];
 
 
 SKBuilder skBuilder = new SKBuilder();
-var semanticKernelBuildResult = await skBuilder.BuildSemanticKernel(apiKey, modelId, apiUrl);
+var semanticKernelBuildResult = await skBuilder.BuildSemanticKernel(apiKey, modelId, apiUrl, new SKQuickTestOptions
+{
+    ShouldAddTestRAGPlugin = true,
+    ShouldTestRAGUploadAndSearch = true
+});
 
 webBuilder.Services.AddSingleton<QdrantVectorStore>(semanticKernelBuildResult.QdrantVectorStore);
 webBuilder.Services.AddSingleton<IChatCompletionService>(semanticKernelBuildResult.ChatCompletionService);
 webBuilder.Services.AddSingleton<Kernel>(semanticKernelBuildResult.Kernel);
 webBuilder.Services.AddSingleton<ModelAndKey>(new ModelAndKey { Key = apiKey, ModelId = modelId });
-
+//webBuilder.Services.AddQdrantVectorStore(semanticKernelBuildResult.QdrantVectorStore);
+webBuilder.Services.AddQdrantVectorStore("localhost", 6333, false, null, new QdrantVectorStoreOptions
+{
+    EmbeddingGenerator = semanticKernelBuildResult.EmbeddingGenerator
+});
 
 
 

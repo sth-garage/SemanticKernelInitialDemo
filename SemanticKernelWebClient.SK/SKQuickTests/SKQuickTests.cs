@@ -197,7 +197,7 @@ namespace SemanticKernelWebClient.SK.SKQuickTesting
 
             // Embeddings are generated automatically on upsert.
             var records = budgetInfo.Select((input, index) => new FinanceInfo { Key = Guid.NewGuid(), Text = input });
-            //await collection.UpsertAsync(records);
+            await collection.UpsertAsync(records);
 
             // Embeddings for the search is automatically generated on search.
             var searchResult = collection.SearchAsync(

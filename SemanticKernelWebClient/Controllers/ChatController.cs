@@ -51,8 +51,17 @@ public class ChatController : ControllerBase
     private static async Task Echo(WebSocket webSocket, IChatCompletionService chatCompletionService, Kernel kernel, ModelAndKey modelAndKey)
     {
         var buffer = new byte[1024 * 4];
-        var receiveResult = await webSocket.ReceiveAsync(
-            new ArraySegment<byte>(buffer), CancellationToken.None);
+        WebSocketReceiveResult receiveResult = null;
+
+        try
+        {
+            receiveResult = await webSocket.ReceiveAsync(
+                new ArraySegment<byte>(buffer), CancellationToken.None);
+        }
+        catch(Exception ex)
+        {
+
+        }
 
         // Enable planning
         OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()

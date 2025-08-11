@@ -800,6 +800,8 @@
                 socket = new WebSocket(wsUrl);
                 socket.onopen = function () {
                     enableInputs(true);
+                    debugger;
+                    sendInitialMessage();
                 };
                 socket.onclose = function (event) {
                     disableInputs();
@@ -834,6 +836,13 @@
                 socket.send(data);
                 sendMessage.val("").focus();
                 sendButton.prop('disabled', true);
+            }
+
+
+            function sendInitialMessage() {
+                if (!socket || socket.readyState !== WebSocket.OPEN || isWaitingReply || userBlockedByAgent) return;
+                
+                socket.send('test');
             }
 
             sendButton.on('click', sendCurrentMessage);

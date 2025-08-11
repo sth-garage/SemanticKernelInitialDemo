@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Plugins.Core;
+using OpenAI;
 using Qdrant.Client;
 using SemanticKernelWebClient.Models;
 using SemanticKernelWebClient.Plugins;
@@ -35,17 +36,18 @@ namespace SemanticKernelWebClient.SK
             )
             .AddOpenAIEmbeddingGenerator("text-embedding-3-small", apiKey);
 
-            var servicesTest = skBuilder.Services.ToList();
+
+
 
             skBuilder.Services.AddQdrantVectorStore("localhost", 6333, false, null, new QdrantVectorStoreOptions
             {
-               //EmbeddingGenerator = skBuilder.Services[4]
-               //EmbeddingGenerator = new E
+                //EmbeddingGenerator = skBuilder.Services.g
+                //EmbeddingGenerator = new E
             });
 
             // Plugins
-
-            if (false)
+            var usePlugins = false;
+            if (usePlugins)
             {
                 skBuilder.Plugins.AddFromType<LightsPlugin>();
                 skBuilder.Plugins.AddFromType<ExportPlugin>();
@@ -77,12 +79,14 @@ namespace SemanticKernelWebClient.SK
             if (sKQuickTestOptions != null)
             {
                 var skQuickTests = new SKQuickTests(modelId, apiKey);
+                sKQuickTestOptions.Kernel = kernel;
                 await skQuickTests.RunTests(sKQuickTestOptions);
             }
             return new SemanticKernelBuilderResult
             {
                 Kernel = kernel,
                 ChatCompletionService = chatCompletionService,
+                EmbeddingGenerator = embeddingGenerator,
                 QdrantVectorStore = vectorStore
             };
         }
