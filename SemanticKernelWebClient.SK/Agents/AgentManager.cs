@@ -64,8 +64,6 @@ public class AgentManager()
 
         agentList.Add(finalApproverAssistant);
 
-        //AgentGroupChat d = new AgentGroupChat()
-
         AgentGroupChat chat =
             new(agentList.ToArray())
             {
@@ -84,9 +82,6 @@ public class AgentManager()
                             }
                     },
             };
-
-        
-        //chat.AddChatMessage(new ChatMessageContent {  f})
 
         return chat;
     }
@@ -111,7 +106,6 @@ public class AgentManager()
                  CancellationToken.None);
         }
 
-        //Console.WriteLine($"\n[IS COMPLETED: {agentGroupChat.IsComplete}]");
     }
 
 

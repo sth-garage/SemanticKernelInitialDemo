@@ -1,12 +1,17 @@
-﻿using Microsoft.SemanticKernel;
+﻿using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.TextToAudio;
 using OpenAI.Images;
+using Qdrant.Client;
+using SemanticKernelWebClient.Models;
+using TextContent = Microsoft.SemanticKernel.TextContent;
 
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0001
-namespace SemanticKernelWebClient.SK
+namespace SemanticKernelWebClient.SK.SKQuickTesting
 {
     public class SKQuickTests
     {
@@ -48,6 +53,28 @@ namespace SemanticKernelWebClient.SK
 
             }
 
+            if (options.ShouldTestRAGSearch)
+            {
+                var embeddingGenerator = options.Kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+
+                var vectorStore = new QdrantVectorStore(
+                   new QdrantClient("localhost"),
+                   ownsClient: true,
+                   new QdrantVectorStoreOptions
+                   {
+                       EmbeddingGenerator = embeddingGenerator
+                   });
+
+                await skQuickTests.SearchOnExisting(vectorStore);
+            }
+
+            if (options.ShouldTestRAGUploadAndSearch)
+            {
+                var embeddingGenerator = options.Kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+
+                await skQuickTests.UploadAndSearch(embeddingGenerator);
+            }
+
         }
 
         public async Task TestImage(string imageText, string filePath, string fileNamePrefix, int loopCount = 0)
@@ -67,7 +94,7 @@ namespace SemanticKernelWebClient.SK
                     });
                 var bytes = generatedImage.ImageBytes;
                 var byteArr = bytes.ToArray();
-                var safePath = this.GetSafePath(filePath, fileNamePrefix, i);
+                var safePath = GetSafePath(filePath, fileNamePrefix, i);
                 File.WriteAllBytes(safePath, byteArr);
             }
         }
@@ -139,23 +166,75 @@ namespace SemanticKernelWebClient.SK
         private string GetSafePath(string filePath, string fileNamePrefix, int i)
         {
             var filePathDash = filePath.EndsWith("\\") ? filePath : filePath + "\\";
-            var fileName = String.Format(@"{0}{1}.png", fileNamePrefix, i);
-            var fullPath = String.Format("{0}{1}");
+            var fileName = string.Format(@"{0}{1}.png", fileNamePrefix, i);
+            var fullPath = string.Format("{0}{1}");
             return fullPath;
+        }
+
+        public async Task UploadAndSearch(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
+        {
+            // The data model
+            var vectorStore = new QdrantVectorStore(
+                new QdrantClient("localhost"),
+                ownsClient: true,
+                new QdrantVectorStoreOptions
+                {
+                    EmbeddingGenerator = embeddingGenerator
+                });
+
+            var collection = vectorStore.GetCollection<Guid, FinanceInfo>("finances");
+            await collection.EnsureCollectionExistsAsync();
+
+            // Create some test data.
+            string[] budgetInfo =
+            {
+                "The budget for 2020 is EUR 100 000",
+                "The budget for 2021 is EUR 120 000",
+                "The budget for 2022 is EUR 150 000",
+                "The budget for 2023 is EUR 200 000",
+                "The budget for 2024 is EUR 364 000"
+            };
+
+            // Embeddings are generated automatically on upsert.
+            var records = budgetInfo.Select((input, index) => new FinanceInfo { Key = Guid.NewGuid(), Text = input });
+            //await collection.UpsertAsync(records);
+
+            // Embeddings for the search is automatically generated on search.
+            var searchResult = collection.SearchAsync(
+                "What is my budget for 2024?",
+                top: 1);
+
+            // Output the matching result.
+            await foreach (var result in searchResult)
+            {
+                Console.WriteLine($"Key: {result.Record.Key}, Text: {result.Record.Text}");
+            }
+        }
+
+
+        public async Task SearchOnExisting(QdrantVectorStore vectorStore)
+        {
+            var collection = vectorStore.GetCollection<Guid, FinanceInfo>("finances");
+            await collection.EnsureCollectionExistsAsync();
+
+            // Embeddings for the search is automatically generated on search.
+            var searchResult = collection.SearchAsync(
+                "What is my budget for 2024?",
+                top: 1);
+
+            // Output the matching result.
+            await foreach (var result in searchResult)
+            {
+                Console.WriteLine($"Key: {result.Record.Key}, Text: {result.Record.Text}");
+            }
         }
 
     }
 
-    public class SKQuickTestOptions
-    {
-        public Kernel Kernel { get; set; }
 
-        public bool ShouldTestImage { get; set; } = false;
 
-        public bool ShouldTestTextToAudio { get; set; } = false;
 
-        public bool ShouldTestLocalRAG { get; set; } = false;
-    }
+    
 
 }
 

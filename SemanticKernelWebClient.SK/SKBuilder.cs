@@ -8,8 +8,10 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Qdrant.Client;
+using SemanticKernelWebClient.Models;
 using SemanticKernelWebClient.Plugins;
-using SemanticKernelWebClient.SK.RAG;
+using SemanticKernelWebClient.SK.SKQuickTesting;
+using SemanticKernelWebClient.SK.SKQuickTesting.PluginTests;
 using System.Threading.Tasks;
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0001
@@ -18,7 +20,7 @@ namespace SemanticKernelWebClient.SK
 {
     public class SKBuilder
     {
-        public async Task<SemanticKernelBuilderResult> BuildSemanticKernel(string apiKey, string modelId, string apiUrl)
+        public async Task<SemanticKernelBuilderResult> BuildSemanticKernel(string apiKey, string modelId, string apiUrl, SKQuickTestOptions sKQuickTestOptions = null)
         {
             var skBuilder = Kernel.CreateBuilder().AddOpenAIChatCompletion(
                 modelId: modelId,
@@ -48,19 +50,17 @@ namespace SemanticKernelWebClient.SK
                 skBuilder.Plugins.AddFromType<LightsPlugin>();
                 skBuilder.Plugins.AddFromType<ExportPlugin>();
                 skBuilder.Plugins.AddFromType<TimePlugin>();
+                
+                skBuilder.Plugins.AddFromType<RagTestPlugin>();
+
             }
-
-
-            skBuilder.Plugins.AddFromType<RagTestPlugin>();
 
             // Build the kernel
             Kernel kernel = skBuilder.Build();
 
-
             var serviceCollection = new ServiceCollection();
             var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
             var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
-            //kernel.Services.
             var vectorStore = new QdrantVectorStore(
                new QdrantClient("localhost"),
                ownsClient: true,
@@ -69,15 +69,12 @@ namespace SemanticKernelWebClient.SK
                    EmbeddingGenerator = embeddingGenerator
                });
 
-
-            RAGTest test = new RAGTest();
-            await test.Blah2(vectorStore);
-
-            //serviceCollection.AddSingleton<QdrantVectorStore>(vectorStore);
-            //serviceCollection.AddSingleton<Kernel>();
-            //serviceCollection.AddSingleton<IChatCompletionService>(chatCompletionService);
-            //var serviceProvider = serviceCollection.BuildServiceProvider();
-
+            var isTesting = false;
+            if (sKQuickTestOptions != null)
+            {
+                var skQuickTests = new SKQuickTests(modelId, apiKey);
+                await skQuickTests.RunTests(sKQuickTestOptions);
+            }
             return new SemanticKernelBuilderResult
             {
                 Kernel = kernel,
@@ -87,12 +84,5 @@ namespace SemanticKernelWebClient.SK
         }
     }
 
-    public class SemanticKernelBuilderResult
-    {
-        public IChatCompletionService ChatCompletionService { get; set; }
-
-        public QdrantVectorStore QdrantVectorStore { get; set; }
-
-        public Kernel Kernel { get; set; }
-    }
+    
 }
