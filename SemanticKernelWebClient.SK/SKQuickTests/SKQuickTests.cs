@@ -143,11 +143,7 @@ namespace SemanticKernelWebClient.SK.SKQuickTesting
 
                 if (withFile)
                 {
-                    chatHistory.AddUserMessage(
-                    [
-                        new TextContent(ragQuestion),
-                        new BinaryContent(fileBytes, "application/pdf")
-                    ]);
+                    
 
                     withFile = false;
                 }

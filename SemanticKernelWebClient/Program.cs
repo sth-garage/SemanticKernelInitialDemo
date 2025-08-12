@@ -34,7 +34,7 @@ SKBuilder skBuilder = new SKBuilder();
 var semanticKernelBuildResult = await skBuilder.BuildSemanticKernel(apiKey, modelId, apiUrl, new SKQuickTestOptions
 {
     ShouldAddTestRAGPlugin = true,
-    ShouldTestRAGUploadAndSearch = true
+    //ShouldTestRAGUploadAndSearch = true
 });
 
 webBuilder.Services.AddSingleton<QdrantVectorStore>(semanticKernelBuildResult.QdrantVectorStore);

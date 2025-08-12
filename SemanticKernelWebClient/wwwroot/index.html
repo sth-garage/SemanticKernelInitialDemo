@@ -567,8 +567,8 @@
         let socket;
         let wsUrl = (location.protocol === "https:" ? "wss://" : "ws://") + location.hostname + (location.port ? (":" + location.port) : "") + "/ws";
         const agentsDefault = [
-            { id: 1, name: "Anna", description: "Handles data analysis tasks.", finalReviewer: false },
-            { id: 2, name: "Ben", description: "Oversees compliance and policy.", finalReviewer: true }
+            { id: 1, name: "Anna", description: "Handles data analysis tasks.  You are very careful and focus on typical forms of data manipulation or hacking.  For example, you focus in on what could become SQL injection when it comes to form operations.  The business depends on your expertise and without it, would be open to legal liability.  You need to protect the clients data and legal interests.", finalReviewer: false },
+            { id: 2, name: "Ben", description: "You are a project manager who wants to get the product out of the door as quickly as possible.  Clients are your number one focus and making them happy is all that matters.  You aren't very familiar with data tasks but you have some idea of the legal repercussions of sharing PII for example, but it is not your main concern.", finalReviewer: true }
         ];
         let agents = JSON.parse(JSON.stringify(agentsDefault));
         let agentIdCounter = 3;
