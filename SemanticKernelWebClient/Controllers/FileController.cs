@@ -1,83 +1,94 @@
 ﻿// FilesController.cs
+using Memory;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using SemanticKernelInitialDemo.DAL;
+using SemanticKernelWebClient.Models;
+using SemanticKernelWebClient.SK.RAG;
+using System.Collections;
 
 [ApiController]
 [Route("api/[controller]")]
 public class FileController : ControllerBase
 {
-    // GET api/files/download?filename=example.txt
-    [HttpGet("download")]
-    public async Task<IActionResult> Download([FromQuery] string filename)
+    ConfigurationValues _configValues = null;
+    IChatCompletionService _chatCompletionService = null;
+    Kernel _kernel = null;
+    CookingContext _cookingContext = null;
+
+    public FileController(ConfigurationValues configValues, IChatCompletionService chatCompletionService, Kernel kernel, CookingContext cookingContext)
     {
-        // Basic security: Only allow downloading files from a specific folder
-        var folder = Path.Combine(Directory.GetCurrentDirectory(), "Files");
-        var filePath = Path.Combine(folder, filename);
+        _chatCompletionService = chatCompletionService;
+        _kernel = kernel;
+        _configValues = configValues;
+        _cookingContext = cookingContext;
 
-        if (!System.IO.File.Exists(filePath))
-            return NotFound();
+    }
 
-        var memory = new MemoryStream();
-        using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+    [HttpPost("upload")]
+    public async Task<IActionResult> Upload(IFormFile file) 
+    {
+        var mimeType = "text/plain";
+
+        if (file == null || file.Length == 0)
         {
-            await stream.CopyToAsync(memory);
+            return BadRequest("No file uploaded.");
         }
-        memory.Position = 0;
-        var contentType = "application/octet-stream";
-        return File(memory, contentType, filename);
+
+        // Define the path where the file will be saved
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        var filePath = Path.Combine(uploadsFolder, file.FileName);
+
+        var matchingRecord = _cookingContext.CustomRecipes.Where(x => x.FilePath == filePath).FirstOrDefault();
+        CustomRecipe result = null;
+
+        if (matchingRecord == null)
+        {
+
+
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var embeddingGenerator = _kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+            var vectorStoreFactory = new VectorStoreFactory(embeddingGenerator);
+            var vectorStore = vectorStoreFactory.VectorStore;
+            var processor = new VectorProcessor(vectorStore, embeddingGenerator);
+            RagUploadManager ragUploadManager = new RagUploadManager(_configValues, _chatCompletionService, _kernel);
+
+            var uploadEntry = await ragUploadManager.GetUploadEntryFromFilePathWithContentAsync(filePath);
+            //await ragUploadManager.ProcessFileAsync(processor, uploadEntry.Collection, uploadEntry.Category, uploadEntry.Terms, mimeType, uploadEntry.TextContent);
+
+            await _cookingContext.CustomRecipes.AddAsync(new CustomRecipe
+            {
+                FilePath = filePath,
+            });
+            await _cookingContext.SaveChangesAsync();
+            result = _cookingContext.CustomRecipes.OrderByDescending(x => x.Id).FirstOrDefault();
+        }
+        else
+        {
+            result = matchingRecord;
+        }
+
+        var hadMatchingRecord = matchingRecord != null;
+
+        var message = String.Format("{0} - {1} - {2} - {3}",
+            hadMatchingRecord ? "That file was already uploaded!" : "Added the file!",
+            result.Id,
+            result.FilePath,
+            result.CreatedOn.ToString("yyyyMMddHHmmss"));
+
+        return Ok(new { Message = message, FileName = file.FileName });
     }
+
 }
-
-
-/*
- * <!DOCTYPE html>
-<html>
-<head>
-    <title>Download File via Fetch</title>
-</head>
-<body>
-    <button id="downloadBtn">Download File via JS</button>
-
-<script>
-document.getElementById('downloadBtn').addEventListener('click', async () => {
-    const filename = "example.txt"; // change as needed
-    try {
-        // Fetch the file. Adjust the URL as needed for your API.
-        const response = await fetch(`/api/files/download?filename=${encodeURIComponent(filename)}`);
-        if (!response.ok) {
-            alert("Failed to download file!");
-            return;
-        }
-
-        // Get filename from the Content-Disposition header if present
-        let downloadFilename = filename;
-        const disposition = response.headers.get('Content-Disposition');
-        if (disposition && disposition.indexOf('filename=') !== -1) {
-            let match = disposition.match(/filename="?([^"]+)"?/);
-            if (match && match[1]) downloadFilename = match[1];
-        }
-
-        // Convert response to Blob
-        const blob = await response.blob();
-
-        // For modern browsers: create a link and trigger click
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = downloadFilename;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }, 100);
-
-    } catch (err) {
-        alert("Error: " + err);
-    }
-});
-</script>
-</body>
-</html>
- */

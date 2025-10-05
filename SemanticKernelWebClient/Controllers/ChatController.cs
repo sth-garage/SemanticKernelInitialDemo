@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Newtonsoft.Json;
+using SemanticKernelInitialDemo.DAL;
 using SemanticKernelWebClient.Models;
 using System.Net.WebSockets;
 using System.Text;
@@ -21,15 +22,19 @@ namespace SemanticKernelWebClient.Controllers;
 #region snippet_Controller_Connect
 public class ChatController : ControllerBase
 {
+    ConfigurationValues _userSecrets = null;
     IChatCompletionService _chatCompletionService = null;
     Kernel _kernel = null;
-    ModelAndKey _modelAndKey = null;
 
-    public ChatController(IChatCompletionService chat, Kernel kernel, ModelAndKey modelAndKey)
+    public ChatController(ConfigurationValues userSecrets, 
+        Kernel kernel, 
+        IChatCompletionService chatCompletionService, 
+        CookingContext cookingContext)
     {
-        _chatCompletionService = chat;
+        var quickTest = cookingContext.CustomRecipes.FirstOrDefault();
+        _userSecrets = userSecrets;
+        _chatCompletionService = chatCompletionService;
         _kernel = kernel;
-        _modelAndKey = modelAndKey;
     }
 
     [Route("/ws")]
@@ -39,7 +44,7 @@ public class ChatController : ControllerBase
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
             //aawait ChatController.Send(webSocket, "Hello there!  My name is Semantigator!  How can I help?");
-            await Echo(webSocket, _chatCompletionService, _kernel, _modelAndKey);
+            await Echo(webSocket, _chatCompletionService, _userSecrets, _kernel);
         }
         else
         {
@@ -48,7 +53,7 @@ public class ChatController : ControllerBase
     }
     #endregion
 
-    private static async Task Echo(WebSocket webSocket, IChatCompletionService chatCompletionService, Kernel kernel, ModelAndKey modelAndKey)
+    private static async Task Echo(WebSocket webSocket, IChatCompletionService chatCompletionService, ConfigurationValues configValues, Kernel kernel)
     {
         var buffer = new byte[1024 * 4];
         var receiveResult = await webSocket.ReceiveAsync(
@@ -68,13 +73,6 @@ public class ChatController : ControllerBase
         var hasAgentQuestion = false;
         AgentPayload agentPayload = null;
         AgentManager agents = new AgentManager();
-
-        //chatHistory.AddSystemMessage("Greet the user and ask them for their name and what can you help them with today");
-
-        //chatHistory.AddSystemMessage("Your name is Semantigator.  You are a helpful assistant that wants the user to get the job done.  You are friendly, happy, and always willing to help.  You speak with enthusiasm.  Occasionally make an alligator joke or pun.  If the users input ever confuses you or is unclear, ask clarifying questions. Start the chat by introducing yourself and asking if there is anything the user needs help with.  Do not respond until the content is done");
-
-
-        //await ChatController.Send(webSocket, "Hello there!  My name is Semantigator!  How can I help?");
 
         while (!receiveResult.CloseStatus.HasValue)
         {
@@ -100,7 +98,7 @@ public class ChatController : ControllerBase
 
             if (hasAgentQuestion && agentPayload != null)
             {
-                await agents.ChatWithOpenAIAssistantAgentAndChatCompletionAgent(kernel, modelAndKey.Key, modelAndKey.ModelId, webSocket, agentPayload, userMessage);
+                await agents.ChatWithOpenAIAssistantAgentAndChatCompletionAgent(configValues, kernel, webSocket, agentPayload.Agents, userMessage);
                 isAgentChat = false;
                 hasAgentQuestion= false;
                 agentPayload = null;
@@ -110,14 +108,10 @@ public class ChatController : ControllerBase
 
 
             ChatMessageContent content = new ChatMessageContent();
-            //chatHistory.AddDeveloperMessage("The result should always be in rich HTML format - the root element must be a DIV.  The author name must be displayed in bold on the top line of each message.  Include visual elements like lists, colors, tables when appropriate to provide clarity");
-
 
             var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, 
                 executionSettings: openAIPromptExecutionSettings,
                 kernel: kernel);
-
-            //chatHistory.AddMessage(result.Role, result.Content ?? string.Empty);
 
             var resultString = result.AsJson();
             var resultMsgBytes = Encoding.UTF8.GetBytes(resultString);

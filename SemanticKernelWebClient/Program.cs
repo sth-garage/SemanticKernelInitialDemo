@@ -1,15 +1,21 @@
 using Agents;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.TextToAudio;
 using OpenAI.Images;
+using SemanticKernelInitialDemo.DAL;
 using SemanticKernelWebClient.Models;
 using SemanticKernelWebClient.SK;
 using System.IO;
+using System.Text;
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0001
 
@@ -19,17 +25,36 @@ var webBuilder = WebApplication.CreateBuilder(args);
 webBuilder.Services.AddControllers();
 
 var configBuilder = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
-var apiKey = configBuilder["AI:ApiKey"];
-var modelId = configBuilder["AI:Model"];
-var apiUrl = configBuilder["AI:ApiUrl"];
+var userSecrets = UserSecretManager.GetSecrets(configBuilder);
 
+// dotnet user-secrets set "MySecretKey" "MySecretValue"
+
+var apiKey = userSecrets.OpenAISettings.OpenAI_ApiKey;
+var modelId = userSecrets.OpenAISettings.OpenAI_Model;
+var embeddingModel = userSecrets.OpenAISettings.OpenAI_EmbeddingModel;
 
 SKBuilder skBuilder = new SKBuilder();
-var semanticKernelBuildResult = skBuilder.BuildSemanticKernel(apiKey, modelId, apiUrl);
+var semanticKernelBuildResult = await skBuilder.BuildSemanticKernelAsync(userSecrets, new SKQuickTestOptions
+{
 
-webBuilder.Services.AddSingleton<IChatCompletionService>(semanticKernelBuildResult.ChatCompletionService);
-webBuilder.Services.AddSingleton<Kernel>(semanticKernelBuildResult.Kernel);
+});
+
+webBuilder.Services.AddSingleton<QdrantVectorStore>(semanticKernelBuildResult.AIServices.QdrantVectorStore);
+webBuilder.Services.AddSingleton<IChatCompletionService>(semanticKernelBuildResult.AIServices.ChatCompletionService);
+webBuilder.Services.AddSingleton<Kernel>(semanticKernelBuildResult.AIServices.Kernel);
+webBuilder.Services.AddSingleton<ConfigurationValues>(userSecrets);
+
+
+webBuilder.Services.AddQdrantVectorStore("localhost", 6333, false, null, new QdrantVectorStoreOptions
+{
+    EmbeddingGenerator = semanticKernelBuildResult.AIServices.EmbeddingGenerator
+});
+
+
+webBuilder.Services.AddSingleton<IChatCompletionService>(semanticKernelBuildResult.AIServices.ChatCompletionService);
+webBuilder.Services.AddSingleton<Kernel>(semanticKernelBuildResult.AIServices.Kernel);
 webBuilder.Services.AddSingleton<ModelAndKey>(new ModelAndKey { Key = apiKey, ModelId = modelId });
+webBuilder.Services.AddDbContext<CookingContext>();
 
 
 // Enable planning
@@ -43,7 +68,7 @@ var app = webBuilder.Build();
 // <snippet_UseWebSockets>
 var webSocketOptions = new WebSocketOptions
 {
-    KeepAliveInterval = TimeSpan.FromMinutes(2)
+    KeepAliveInterval = TimeSpan.FromMinutes(20)
 };
 
 app.UseWebSockets(webSocketOptions);
