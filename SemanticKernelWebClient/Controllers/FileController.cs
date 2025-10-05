@@ -66,6 +66,7 @@ public class FileController : ControllerBase
             RagUploadManager ragUploadManager = new RagUploadManager(_configValues, _chatCompletionService, _kernel);
 
             var uploadEntry = await ragUploadManager.GetUploadEntryFromFilePathWithContentAsync(filePath);
+            await ragUploadManager.ProcessFileAsync(processor, uploadEntry.Collection, uploadEntry.Category, uploadEntry.Terms, mimeType, uploadEntry.TextContent);
 
             await _cookingContext.CustomRecipes.AddAsync(new CustomRecipe
             {
