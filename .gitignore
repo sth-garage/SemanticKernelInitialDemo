@@ -406,3 +406,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /SemanticKernelWebClient/wwwroot/Images/the_original_sparqy.png
+/SemanticKernelWebClient/Uploads

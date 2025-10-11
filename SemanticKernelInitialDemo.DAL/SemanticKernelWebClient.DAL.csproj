@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="SQL Scripts\2025105\.vs\**" />
+    <Compile Remove="SQL Scripts\2025105\SemanticKernelInitialDemo.DAL\**" />
+    <Compile Remove="SQL Scripts\2025105\SemanticKernelWebClient.Models\**" />
+    <Compile Remove="SQL Scripts\2025105\SemanticKernelWebClient.SK\**" />
+    <Compile Remove="SQL Scripts\2025105\SemanticKernelWebClient\**" />
+    <EmbeddedResource Remove="SQL Scripts\2025105\.vs\**" />
+    <EmbeddedResource Remove="SQL Scripts\2025105\SemanticKernelInitialDemo.DAL\**" />
+    <EmbeddedResource Remove="SQL Scripts\2025105\SemanticKernelWebClient.Models\**" />
+    <EmbeddedResource Remove="SQL Scripts\2025105\SemanticKernelWebClient.SK\**" />
+    <EmbeddedResource Remove="SQL Scripts\2025105\SemanticKernelWebClient\**" />
+    <None Remove="SQL Scripts\2025105\.vs\**" />
+    <None Remove="SQL Scripts\2025105\SemanticKernelInitialDemo.DAL\**" />
+    <None Remove="SQL Scripts\2025105\SemanticKernelWebClient.Models\**" />
+    <None Remove="SQL Scripts\2025105\SemanticKernelWebClient.SK\**" />
+    <None Remove="SQL Scripts\2025105\SemanticKernelWebClient\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
