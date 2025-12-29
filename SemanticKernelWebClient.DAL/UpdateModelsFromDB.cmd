@@ -1,0 +1,1 @@
+dotnet ef dbcontext scaffold "Data Source=127.0.0.1;Initial Catalog=SemanticKernelWebClient;User Id=semanticKernelWebClientServiceLogin;Password=Testing777!!;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer --context SemanticKernelWebClientDBContext --context-dir ./Context --force --output-dir ./EFModels --force

@@ -1,12 +1,12 @@
-
-using GatorBytes.SK;
+using SemanticKernelWebClient.DAL.Context;
+using SemanticKernelWebClient.Shared.Models;
+using SemanticKernelWebClient.Shared.Utility;
+using SemanticKernelWebClient.SK;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using SemanticKernelWebClient.DAL.Context;
-using SemanticKernelWebClient.Shared.Models;
-using SemanticKernelWebClient.Shared.Utility;
+using SemanticKernelWebClient.SK;
 
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0001

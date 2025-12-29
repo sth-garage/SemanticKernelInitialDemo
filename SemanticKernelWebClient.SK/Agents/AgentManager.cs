@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 //using DocumentFormat.OpenXml.Math;
+using SemanticKernelWebClient.Shared.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -8,7 +9,6 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
 using SemanticKernelWebClient;
-using SemanticKernelWebClient.Models;
 using System.ClientModel;
 using System.Net.WebSockets;
 using System.Text;
@@ -31,13 +31,13 @@ public class AgentManager()
 
 
 
-    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(ConfigurationValues configValues, Kernel kernel, WebSocket webSocket, List<AgentFromWeb> agents, string prompt)
-    {
-        AssistantClient assistantClient = new AssistantClient(configValues.OpenAISettings.OpenAI_ApiKey);
+    //public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(ConfigurationValues configValues, Kernel kernel, WebSocket webSocket, List<AgentFromWeb> agents, string prompt)
+    //{
+    //    AssistantClient assistantClient = new AssistantClient(configValues.OpenAISettings.OpenAI_ApiKey);
 
-        var chat = await GetAgentGroupChat(assistantClient, agents, configValues.OpenAISettings.OpenAI_Model, kernel, prompt);
-        await BeginChat(chat, prompt, webSocket);
-    }
+    //    var chat = await GetAgentGroupChat(assistantClient, agents, configValues.OpenAISettings.OpenAI_Model, kernel, prompt);
+    //    await BeginChat(chat, prompt, webSocket);
+    //}
 
 
     
