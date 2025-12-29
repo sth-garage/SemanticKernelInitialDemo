@@ -28,18 +28,22 @@ namespace Agents;
 /// </summary>
 public class AgentManager()
 {
-    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(Kernel kernel, string key, string model, WebSocket webSocket, AgentPayload agentPayload, string prompt)
+
+
+
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(ConfigurationValues configValues, Kernel kernel, WebSocket webSocket, List<AgentFromWeb> agents, string prompt)
     {
-        AssistantClient assistantClient = new AssistantClient(key);
+        AssistantClient assistantClient = new AssistantClient(configValues.OpenAISettings.OpenAI_ApiKey);
 
-        var agents = agentPayload.Agents?.ToList();
-
-        var chat = await GetAgentGroupChat(assistantClient, agents, model, kernel, prompt);
+        var chat = await GetAgentGroupChat(assistantClient, agents, configValues.OpenAISettings.OpenAI_Model, kernel, prompt);
         await BeginChat(chat, prompt, webSocket);
     }
 
 
-    private async Task<AgentGroupChat> GetAgentGroupChat(AssistantClient assistantClient,
+    
+
+
+    protected async Task<AgentGroupChat> GetAgentGroupChat(AssistantClient assistantClient,
         List<AgentFromWeb> agents,
         string model,
         Kernel kernel,
@@ -64,8 +68,6 @@ public class AgentManager()
 
         agentList.Add(finalApproverAssistant);
 
-        //AgentGroupChat d = new AgentGroupChat()
-
         AgentGroupChat chat =
             new(agentList.ToArray())
             {
@@ -85,15 +87,12 @@ public class AgentManager()
                     },
             };
 
-        
-        //chat.AddChatMessage(new ChatMessageContent {  f})
-
         return chat;
     }
 
 
 
-    private async Task BeginChat(AgentGroupChat agentGroupChat, string topic, WebSocket webSocket)
+    protected async Task BeginChat(AgentGroupChat agentGroupChat, string topic, WebSocket webSocket)
     {
         // Invoke chat and display messages.
         ChatMessageContent input = new(AuthorRole.User, topic);
@@ -111,7 +110,6 @@ public class AgentManager()
                  CancellationToken.None);
         }
 
-        //Console.WriteLine($"\n[IS COMPLETED: {agentGroupChat.IsComplete}]");
     }
 
 
@@ -141,14 +139,14 @@ public class AgentManager()
 
 
 #pragma warning disable SKEXP0110
-    private sealed class ApprovalTerminationStrategy(string valueToCauseAnExit = "ApprovedAndDone") : TerminationStrategy
+    protected sealed class ApprovalTerminationStrategy(string valueToCauseAnExit = "ApprovedAndDone") : TerminationStrategy
     {
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
             => Task.FromResult(history[history.Count - 1].Content?.Contains("ApprovedAndDone", StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
 
-    public virtual async Task<ClientResult<Assistant>> CreateAssistantAsync(string model, AssistantCreationOptions options = null, CancellationToken cancellationToken = default)
+    protected virtual async Task<ClientResult<Assistant>> CreateAssistantAsync(string model, AssistantCreationOptions options = null, CancellationToken cancellationToken = default)
     {
         ClientResult protocolResult = await CreateAssistantAsync(model, options, cancellationToken).ConfigureAwait(false);
         return ClientResult.FromValue((Assistant)protocolResult, protocolResult.GetRawResponse());

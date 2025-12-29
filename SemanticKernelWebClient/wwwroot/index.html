@@ -474,6 +474,17 @@
             z-index: 4;
         }
 
+        /* Visually hidden utility for off-screen inputs */
+        .visually-hidden {
+            position: absolute !important;
+            height: 1px;
+            width: 1px;
+            overflow: hidden;
+            clip: rect(1px,1px,1px,1px);
+            white-space: nowrap;
+            border: 0;
+            padding: 0;
+        }
     </style>
 </head>
 <body>
@@ -524,7 +535,7 @@
         <img src="Images/sk-alligator-logo.png" alt="" style="width:1.3em;margin-right:.5em;vertical-align:middle;"> Agent Chat
     </button>
     <section class="agent-chat-panel" id="agentChatPanel" aria-hidden="true" style="position:fixed;left:0;right:0;bottom:-540px;height:520px;max-height:98vh;background:var(--sk-docs-surface);border-top-left-radius:32px;border-top-right-radius:32px;box-shadow:0 -8px 32px 0 #475bdf35;z-index:1040;transition:bottom.33s cubic-bezier(.38,1.22,.38,1);border-top:3px solid var(--sk-docs-border);display:flex;flex-direction:column;">
-        <div class="agent-chat-panel-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7em;padding::1.04em 2em 0.3em 2em;background:#202248;border-top-left-radius:31px;border-top-right-radius:31px;">
+        <div class="agent-chat-panel-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7em;padding:1.04em 2em 0.3em 2em;background:#202248;border-top-left-radius:31px;border-top-right-radius:31px;">
             <span class="agent-chat-title" style="font-size:1.15rem;font-weight:800;color:#a7bbff;letter-spacing:.01em;">
                 <img src="Images/sk-alligator-logo.png" alt="" style="width:1.8em;margin-right:.45em;vertical-align:middle;"> Agent Chat
             </span>
@@ -534,6 +545,12 @@
         <button type="button" class="add-agent-btn" id="addAgentBtn" title="Add new agent" aria-label="Add agent" style="background:var(--sk-docs-agent);border:none;color:white;width:41px;height:41px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.04rem;position:absolute;bottom:2em;left:2.0em;box-shadow:0 2px 12px #47d0ff47;transition:background .12s, color .16s;">+</button>
         <button type="button" class="start-chat-btn" id="startChatBtn" style="position:absolute;right:2.0em;bottom:2em;background:var(--sk-docs-primary);color:#fff;font-size:1.07rem;font-weight:800;border:none;border-radius:13px;padding:0.56em 1.9em;box-shadow:0 2px 13px #471be779;transition:background .14s, color .16s;">Start Chat</button>
     </section>
+
+    <!-- Hidden file input for uploads (like TEACHER) -->
+    <div class="visually-hidden">
+        <input type="file" id="uploadInput" accept=".txt" />
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -578,17 +595,17 @@
             // zebra stripe
             var zebraClass = (index % 2 === 0) ? "agent-stripe-even" : "agent-stripe-odd";
             return `
-                    <div class="agent-card ${zebraClass}" data-agent-id="${agent.id}">
-                        <div class="agent-card-header-line">
-                            <input type="text" class="agent-name-input form-control form-control-sm" value="${agent.name.replace(/"/g, "&quot;")}" placeholder="Agent name" maxlength="60" />
-                            <div style="display:flex; align-items:center; gap:0.37em;">
-                                <input type="checkbox" class="final-reviewer-checkbox" ${agent.finalReviewer ? 'checked' : ''} title="Final Reviewer" id="finalr-${agent.id}">
-                                <label class="agent-final-label" for="finalr-${agent.id}">Final Reviewer</label>
+                        <div class="agent-card ${zebraClass}" data-agent-id="${agent.id}">
+                            <div class="agent-card-header-line">
+                                <input type="text" class="agent-name-input form-control form-control-sm" value="${agent.name.replace(/"/g, "&quot;")}" placeholder="Agent name" maxlength="60" />
+                                <div style="display:flex; align-items:center; gap:0.37em;">
+                                    <input type="checkbox" class="final-reviewer-checkbox" ${agent.finalReviewer ? 'checked' : ''} title="Final Reviewer" id="finalr-${agent.id}">
+                                    <label class="agent-final-label" for="finalr-${agent.id}">Final Reviewer</label>
+                                </div>
+                                <button type="button" class="agent-remove-btn ms-auto" title="Remove agent" aria-label="Remove agent">&times;</button>
                             </div>
-                            <button type="button" class="agent-remove-btn ms-auto" title="Remove agent" aria-label="Remove agent">&times;</button>
-                        </div>
-                        <textarea class="form-control agent-description" placeholder="Description">${agent.description || ""}</textarea>
-                    </div>`;
+                            <textarea class="form-control agent-description" placeholder="Description">${agent.description || ""}</textarea>
+                        </div>`;
         }
         function renderAgentsList() {
             $('#agentsList').html(
@@ -664,8 +681,10 @@
                 }
                 closeAgentPanel();
             });
+
+            // Updated: trigger hidden file input on click, like TEACHER
             $('#fileUploadBtn').on('click', function () {
-                alert('File upload button clicked!');
+                $('#uploadInput').trigger('click');
             });
         });
 
@@ -693,18 +712,39 @@
             let chatArea = $("#chatArea");
             let sendMessage = $("#sendMessage");
             let sendButton = $("#sendButton");
+            let fileUploadBtn = $("#fileUploadBtn");
+
+            // Upload implementation (like TEACHER)
+            const uploadInput = document.getElementById('uploadInput');
+            function uploadFile() {
+                if (!uploadInput.files || uploadInput.files.length === 0) return;
+                const formData = new FormData();
+                formData.append('file', uploadInput.files[0]);
+                fetch('/api/file/upload', { method: 'POST', body: formData })
+                    .then(r => r.json())
+                    .then(data => { console.log('Upload successful:', data); })
+                    .catch(err => console.error('Upload error:', err))
+                    .finally(() => { uploadInput.value = ''; });
+            }
+            if (uploadInput) {
+                uploadInput.addEventListener('change', uploadFile);
+            }
+
             function enableInputs(state = true) {
                 if (userBlockedByAgent) {
                     sendMessage.prop("disabled", true);
                     sendButton.prop("disabled", true);
+                    fileUploadBtn.prop("disabled", true);
                     return;
                 }
                 sendMessage.prop("disabled", !state);
                 sendButton.prop("disabled", !state || sendMessage.val().trim() === "");
+                fileUploadBtn.prop("disabled", !state);
             }
             function disableInputs() {
                 sendMessage.prop("disabled", true);
                 sendButton.prop("disabled", true);
+                fileUploadBtn.prop("disabled", true);
             }
             sendMessage.on("input", function () {
                 sendButton.prop("disabled", sendMessage.val().trim() === "" || isWaitingReply || userBlockedByAgent);
@@ -755,11 +795,11 @@
                     isFinalReviewer = reviewerNames.includes(normalized);
                     if (isFinalReviewer) {
                         finalReviewerIcon = `
-                                    <span class="final-reviewer-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M10 1.5a2.5 2.5 0 00-2.5 2.5v1.31A7.001 7.001 0 003 12a7 7 0 1014 0 7.001 7.001 0 00-4.5-6.69V4A2.5 2.5 0 0010 1.5zM12.5 4v1.04A7.002 7.002 0 017 12a7.002 7.002 0 015.5-6.96V4A.5.5 0 0112.5 4z"/>
-                                        </svg>
-                                    </span>`;
+                                        <span class="final-reviewer-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M10 1.5a2.5 2.5 0 00-2.5 2.5v1.31A7.001 7.001 0 003 12a7 7 0 1014 0 7.001 7.001 0 00-4.5-6.69V4A2.5 2.5 0 0010 1.5zM12.5 4v1.04A7.002 7.002 0 017 12a7.002 7.002 0 015.5-6.96V4A.5.5 0 0112.5 4z"/>
+                                            </svg>
+                                        </span>`;
                     }
                     richHtml = "<div class='author-div'><span class='author-span'>" + authorName + finalReviewerIcon + "</span></div>" + richHtml;
                     bubbleCss['background-color'] = getAuthorColor(authorName);
