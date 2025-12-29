@@ -1,6 +1,6 @@
 using System.Net.WebSockets;
 
-namespace SemanticKernelWebClient.Models;
+namespace SemanticKernelWebClient.Shared.Utility;
 
 internal class BackgroundSocketProcessor
 {

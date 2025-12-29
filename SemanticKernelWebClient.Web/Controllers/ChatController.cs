@@ -1,11 +1,12 @@
+using SemanticKernelWebClient.DAL.Context;
+using SemanticKernelWebClient.Shared.Models;
+using SemanticKernelWebClient.Shared.Prompts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernelWebClient;
-using SemanticKernelWebClient.DAL.Context;
-using SemanticKernelWebClient.Shared.Models;
-using SemanticKernelWebClient.Shared.Prompts;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -13,8 +14,6 @@ using System.Text;
 #pragma warning disable OPENAI001
 #pragma warning disable SKEXP0110
 #pragma warning disable SKEXP0001
-
-#pragma warning disable OPENAI001
 
 namespace SemanticKernelWebClient.Controllers;
 
