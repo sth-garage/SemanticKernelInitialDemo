@@ -1,12 +1,12 @@
 {
   "profiles": {
-    "SemanticKernelWebClient.Web": {
+    "SKernel": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:50424;http://localhost:50425"
+      "applicationUrl": "https://localhost:62863;http://localhost:62864"
     }
   }
 }
