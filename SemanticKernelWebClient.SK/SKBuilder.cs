@@ -10,7 +10,7 @@ using SemanticKernelWebClient.SK.Plugins;
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0001
 
-namespace GatorBytes.SK
+namespace SemanticKernelWebClient.SK
 {
     public class SKBuilder
     {
